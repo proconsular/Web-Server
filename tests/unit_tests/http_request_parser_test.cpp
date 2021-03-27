@@ -35,3 +35,13 @@ TEST(HTTPRequestParserTests, RequestLine_Headers) {
     ASSERT_EQ("helloworld", request->headers["Host"]);
     ASSERT_EQ("plain/text", request->headers["content-type"]);
 }
+
+TEST(HTTPRequestParserTests, RequestLine_Headers_Body) {
+    std::string data = "GET / HTTP/1.1\r\nContent-Length: 11\r\n\r\nHello world";
+    HTTPRequest* request = HTTPRequestParser::parse(data);
+    ASSERT_EQ("GET", request->method);
+    ASSERT_EQ("/", request->uri);
+    ASSERT_EQ("HTTP/1.1", request->version);
+    ASSERT_EQ("11", request->headers["Content-Length"]);
+    ASSERT_EQ("Hello world", request->body);
+}

@@ -3,7 +3,7 @@ project(P8_Web_Server)
 
 set(CMAKE_CXX_STANDARD 17)
 
-set(SOURCE_FILES main.cpp src/socket.cpp src/http_request.cpp src/http_request.h src/http_request_parser.cpp src/http_request_parser.h)
+set(SOURCE_FILES main.cpp src/socket.cpp src/http_request.cpp src/http_request.h src/http_request_parser.cpp src/http_request_parser.h src/http_response.cpp src/http_response.h src/tasks/task.h src/tasks/reception_task.cpp src/tasks/reception_task.h src/state.cpp src/state.h src/connection.cpp src/connection.h src/tasks/initialize_server_task.cpp src/tasks/initialize_server_task.h src/tasks/receive_requests_task.cpp src/tasks/receive_requests_task.h src/tasks/prune_connections_task.cpp src/tasks/prune_connections_task.h src/task_scheduler.cpp src/task_scheduler.h src/client_request.cpp src/client_request.h)
 add_executable(${CMAKE_PROJECT_NAME}_run ${SOURCE_FILES})
 
 include_directories(src)

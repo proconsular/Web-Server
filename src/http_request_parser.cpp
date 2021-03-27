@@ -4,6 +4,7 @@
 
 #include "http_request_parser.h"
 #include <vector>
+#include <iostream>
 
 HTTPRequest * HTTPRequestParser::parse(const std::string &data) {
     HTTPRequest* request = new HTTPRequest;
@@ -13,6 +14,11 @@ HTTPRequest * HTTPRequestParser::parse(const std::string &data) {
     processRequestLine(request, data, cursor);
     processHeaders(request, data, cursor);
 
+    if (request->headers.find("Content-Length") != request->headers.end()) {
+        int length = atoi(request->headers["Content-Length"].c_str());
+        request->body = std::string(cursor, cursor + length);
+    }
+
     return request;
 }
 
@@ -20,14 +26,18 @@ void HTTPRequestParser::processHeaders(HTTPRequest *request, const std::string &
     std::string::const_iterator i = cursor;
 
     std::string key;
-    for (; cursor != data.end(); cursor++) {
+    for (; cursor < data.end(); cursor++) {
         if (*cursor == ':') {
             key = std::string(i, cursor);
             i = cursor + 1;
         } else if (*cursor == '\r') {
             while (isspace(*i)) i++;
             request->headers[key] = std::string(i, cursor);
+            std::string::const_iterator end = cursor;
             next(cursor, data);
+            if (cursor - end == 4) {
+                break;
+            }
             i = cursor;
         }
     }

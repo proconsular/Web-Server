@@ -15,7 +15,7 @@ private:
     static void processRequestLine(HTTPRequest*, const std::string&, std::string::const_iterator&);
     static void processHeaders(HTTPRequest*, const std::string&, std::string::const_iterator&);
     static void next(std::string::const_iterator& i, const std::string& data) {
-        while (i != data.end() && (*i == '\r' || *i == '\n')) i++;
+        while (i != data.end() && (*i == '\r' || *i == '\n')) ++i;
     }
 };
 
