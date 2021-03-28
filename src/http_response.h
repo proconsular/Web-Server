@@ -14,6 +14,7 @@ public:
         this->code = code;
         this->status = status;
         this->version = version;
+        body = NULL;
     }
 
     static HTTPResponse OK() {
@@ -24,9 +25,9 @@ public:
     std::string version;
     std::string status;
     std::map<std::string, std::string> headers;
-    std::string body;
+    std::string* body;
 
-    std::string generate();
+    std::string* generate();
 private:
 };
 

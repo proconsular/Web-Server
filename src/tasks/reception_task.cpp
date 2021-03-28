@@ -9,7 +9,7 @@ void ReceptionTask::perform() {
     Socket new_client;
     if (state->server_socket.accept(new_client)) {
         state->connections.push_back(new Connection(new_client));
-        std::cout << "new connection" << std::endl;
+        std::cout << "INFO: New Connection" << std::endl;
     }
 }
 

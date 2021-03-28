@@ -15,20 +15,27 @@
 
 void InitializeServerTask::perform() {
     Socket sock;
+    int port = 8000;
 
-    if (sock.init() == 0) {
-        perror("Socket failed");
-        exit(EXIT_FAILURE);
+    while (true) {
+        if (sock.init() == 0) {
+            perror("Socket failed");
+            exit(EXIT_FAILURE);
+        }
+
+        fcntl(sock.id(), F_SETFL, O_NONBLOCK);
+
+        sock.setup(port);
+
+        if (sock.bind() < 0) {
+            port++;
+            continue;
+        }
+
+        break;
     }
 
-    fcntl(sock.id(), F_SETFL, O_NONBLOCK);
-
-    sock.setup(8080);
-
-    if (sock.bind() < 0) {
-        perror("bind failed");
-        exit(EXIT_FAILURE);
-    }
+    std::cout << "INFO: Listening on port: " << port << std::endl;
 
     if (sock.listen(3) < 0) {
         perror("listen");

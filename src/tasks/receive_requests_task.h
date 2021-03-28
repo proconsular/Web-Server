@@ -10,7 +10,7 @@
 
 class ReceiveRequestsTask: public Task {
 public:
-    ReceiveRequestsTask(State* state): state(state) {};
+    ReceiveRequestsTask(State* state): state(state), _alive(true) {};
 
     void perform() override;
 

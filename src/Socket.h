@@ -9,6 +9,7 @@
 #include <netinet/in.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <string>
 
 class Socket {
 public:
@@ -18,6 +19,11 @@ public:
     int init();
     int bind();
     int listen(int);
+
+    int get_error();
+
+    int read(std::string*);
+    int write(std::string*);
 
     bool accept(Socket&);
 

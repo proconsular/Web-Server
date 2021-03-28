@@ -8,6 +8,9 @@
 #include "task_scheduler.h"
 #include "connection.h"
 #include "client_request.h"
+#include "http_request_envelope.h"
+#include "http_response_envelope.h"
+#include "configuration.h"
 
 #include <vector>
 
@@ -21,7 +24,12 @@ public:
     std::vector<Connection*> connections;
     std::vector<ClientRequest*> requests;
 
+    std::vector<HTTPRequestEnvelope> http_request_queue;
+    std::vector<HTTPResponseEnvelope> http_response_queue;
+
     TaskScheduler* scheduler;
+
+    Configuration config;
 };
 
 

@@ -33,9 +33,9 @@ std::string join(const std::string& separator, const std::vector<std::string>& a
     std::string output;
 
     for (std::vector<std::string>::const_iterator i = arr.begin(); i != arr.end(); i++) {
-        output += *i;
+        output.append(*i);
         if (i + 1 < arr.end()) {
-            output += separator;
+            output.append(separator);
         }
     }
 

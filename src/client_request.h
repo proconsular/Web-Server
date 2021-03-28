@@ -7,17 +7,31 @@
 
 #include <iostream>
 
+#include "connection.h"
+
 enum Requests {
     Unsupported,
     RetrieveFile,
 };
 
+enum RequestStatus {
+    New,
+    Working,
+    Complete,
+    Failed,
+};
+
 class ClientRequest {
 public:
+    ClientRequest(): type(Requests::Unsupported), status(RequestStatus::New) {}
 
     Requests type;
+    RequestStatus status;
+
     std::string uri;
-    std::string data;
+    std::string* data;
+
+    Connection* connection;
 };
 
 

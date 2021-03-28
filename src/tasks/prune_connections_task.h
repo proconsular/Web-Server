@@ -10,7 +10,7 @@
 
 class PruneConnectionsTask: public Task {
 public:
-    PruneConnectionsTask(State* state): state(state) {};
+    PruneConnectionsTask(State* state): state(state), _alive(true) {};
 
     void perform() override;
 

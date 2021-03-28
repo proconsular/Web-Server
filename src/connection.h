@@ -14,11 +14,19 @@ public:
         this->socket = socket;
         alive = true;
         last_read = std::chrono::high_resolution_clock::now();
+        active_requests = 0;
+    }
+
+    bool read(std::string*);
+
+    void terminate() {
+        alive = false;
     }
 
     Socket socket;
     bool alive;
 
+    int active_requests;
     std::chrono::high_resolution_clock::time_point last_read;
 };
 

@@ -6,7 +6,7 @@
 #include "utils.h"
 #include "http_response.h"
 
-std::string HTTPResponse::generate() {
+std::string* HTTPResponse::generate() {
     std::vector<std::string> request_line = {version, std::to_string(code), status};
 
     std::vector<std::string> headers_output;
@@ -14,7 +14,11 @@ std::string HTTPResponse::generate() {
         headers_output.push_back(join(": ", {i->first, i->second}));
     }
 
-    headers_output.push_back(join(": ", {"Content-Length", std::to_string(body.length())}));
+    int body_size = 0;
+    if (body != NULL) {
+        body_size = body->size();
+    }
+    headers_output.push_back(join(": ", {"Content-Length", std::to_string(body_size)}));
 
-    return join("\r\n", {join(" ", request_line), join("\r\n", headers_output), "", body});
+    return new std::string(join("\r\n", {join(" ", request_line), join("\r\n", headers_output), "", body != NULL ? *body : ""}));
 }

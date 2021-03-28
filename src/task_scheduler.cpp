@@ -10,8 +10,14 @@ void TaskScheduler::add(Task *task) {
 
 void TaskScheduler::run() {
     while (true) {
-        for (auto i = tasks.begin(); i != tasks.end(); i++) {
-            (*i)->perform();
+        for (auto i = tasks.begin(); i != tasks.end();) {
+            auto task = *i;
+            if (task->alive()) {
+                task->perform();
+                i++;
+            } else {
+                tasks.erase(i);
+            }
         }
     }
 }
