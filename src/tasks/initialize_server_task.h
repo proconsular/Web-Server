@@ -10,15 +10,16 @@
 
 class InitializeServerTask: public Task {
 public:
-    InitializeServerTask(State* state): state(state) {};
+    InitializeServerTask(State* state): state(state), _alive(true) {};
 
     void perform() override;
 
     bool alive() override {
-        return false;
+        return _alive;
     }
 private:
     State* state;
+    bool _alive;
 };
 
 

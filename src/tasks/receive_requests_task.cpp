@@ -13,7 +13,7 @@ void ReceiveRequestsTask::perform() {
             auto* input = new std::string;
             if (connection->read(input)) {
                 HTTPRequest* request = HTTPRequestParser::parse(*input);
-                state->http_request_queue.emplace_back(connection, request);
+                state->inbound_http_request_queue.emplace_back(connection, request);
                 connection->active_requests++;
             }
             delete input;

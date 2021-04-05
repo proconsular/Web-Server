@@ -6,8 +6,10 @@
 #define P8_WEB_SERVER_CLIENT_REQUEST_H
 
 #include <iostream>
+#include <map>
 
 #include "connection.h"
+#include "url.h"
 
 enum Requests {
     Unsupported,
@@ -28,7 +30,8 @@ public:
     Requests type;
     RequestStatus status;
 
-    std::string uri;
+    URL uri;
+    URL path;
     std::string* data;
 
     Connection* connection;

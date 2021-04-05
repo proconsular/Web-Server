@@ -3,27 +3,31 @@
 //
 
 #include "utils.h"
+#include <math.h>
 
 std::vector<std::string> split_string(const std::string& separator, const std::string& str) {
     std::vector<std::string> parts;
 
-    std::string::const_iterator i = str.begin();
-    std::string::const_iterator j = i;
-    std::string::const_iterator n = i;
-    for (; j != str.end(); j++) {
-        std::string word(n, j);
+    std::string::const_iterator start_word = str.begin();
+    std::string::const_iterator iter = start_word;
+    std::string::const_iterator start_separator = start_word;
+    for (; iter != str.end(); iter++) {
+        std::string word(start_separator, iter);
         if (word == separator) {
-            parts.push_back(std::string(i, n));
-            n = j;
-            i = j;
+            parts.emplace_back(start_word, start_separator);
+            start_separator = iter;
+            start_word = iter;
         }
-        if (*j == *separator.begin()) {
-            n = j;
+        if (*iter == *separator.begin()) {
+            start_separator = iter;
         }
     }
 
-    if (i < j) {
-        parts.push_back(std::string(i, j));
+    if (start_word < iter) {
+        if (start_word < start_separator && start_separator < iter && iter - start_separator == separator.size()) {
+            iter = start_separator;
+        }
+        parts.emplace_back(start_word, iter);
     }
 
     return parts;
@@ -40,4 +44,22 @@ std::string join(const std::string& separator, const std::vector<std::string>& a
     }
 
     return output;
+}
+
+int32_t decode_hex_str(const std::string& str) {
+    int32_t num = 0;
+
+    for (auto iter = str.begin(); iter != str.end(); iter++) {
+        int place = str.end() - iter;
+        int c = tolower(*iter);
+        int digit = 0;
+        if ('0' <= c && c <= '9') {
+            digit = c - '0';
+        } else if ('a' <= c && c <= 'f') {
+            digit = c - 'a' + 10;
+        }
+        num += digit * (pow(16, place - 1));
+    }
+
+    return num;
 }

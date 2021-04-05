@@ -6,12 +6,21 @@
 #define P8_WEB_SERVER_CONFIGURATION_H
 
 #include <iostream>
+#include "url.h"
 
 class Configuration {
 public:
+    Configuration() {
+        port = 8000;
+        keep_alive = 30;
+        port_fixed = false;
+    }
 
-    std::string base_url;
+    URL base_url;
+    int port;
+    int keep_alive;
+
+    bool port_fixed;
 };
-
 
 #endif //P8_WEB_SERVER_CONFIGURATION_H

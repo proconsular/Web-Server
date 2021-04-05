@@ -11,6 +11,8 @@
 #include "http_request_envelope.h"
 #include "http_response_envelope.h"
 #include "configuration.h"
+#include "http_request_carrier.h"
+#include "events.h"
 
 #include <vector>
 
@@ -24,8 +26,11 @@ public:
     std::vector<Connection*> connections;
     std::vector<ClientRequest*> requests;
 
-    std::vector<HTTPRequestEnvelope> http_request_queue;
-    std::vector<HTTPResponseEnvelope> http_response_queue;
+    std::vector<HTTPRequestCarrier*> outbound_http_request_queue;
+    std::vector<HTTPResponseEnvelope> inbound_http_response_queue;
+
+    std::vector<HTTPRequestEnvelope> inbound_http_request_queue;
+    std::vector<HTTPResponseEnvelope> outbound_http_response_queue;
 
     TaskScheduler* scheduler;
 

@@ -5,10 +5,10 @@
 #include "send_responses_task.h"
 
 void SendResponsesTask::perform() {
-    for (auto envelope: state->http_response_queue) {
+    for (auto envelope: state->outbound_http_response_queue) {
         auto response = envelope.response->generate();
         envelope.connection->socket.write(response);
         envelope.connection->active_requests--;
     }
-    state->http_response_queue.clear();
+    state->outbound_http_response_queue.clear();
 }

@@ -11,3 +11,7 @@ bool Connection::read(std::string *output) {
     }
     return amount > 0;
 }
+
+bool Connection::write(std::string *input) {
+    socket.write(input);
+}

@@ -18,6 +18,8 @@ public:
     }
 
 private:
+    std::string getContentType(const std::string&);
+
     State* state;
     bool _alive;
 };

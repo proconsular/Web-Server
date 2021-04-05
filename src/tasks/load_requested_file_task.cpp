@@ -9,11 +9,12 @@
 #include <unistd.h>
 
 void LoadRequestedFileTask::perform() {
-    auto url = config.base_url + _request->uri.substr(1);
-    if (_request->uri == "/") {
-        url = config.base_url + "index.html";
+    auto url = URL::append(config.base_url, _request->uri);
+    if (_request->uri.is_root && _request->uri.components.empty()) {
+        url = URL::append(url, URL::parse("index.html"));
     }
-    auto name = url.c_str();
+    auto url_string = url.to_string();
+    auto name = url_string.c_str();
     if (access(name, F_OK) == 0) {
         FILE* file = fopen(name, "rb");
         auto* output = new std::string;
@@ -25,6 +26,7 @@ void LoadRequestedFileTask::perform() {
             output->append(buffer);
         } while (amount_read == BUFFER_SIZE);
         fclose(file);
+        _request->path = url;
         _request->data = output;
         _request->status = RequestStatus::Complete;
     } else {

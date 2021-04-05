@@ -18,6 +18,7 @@ public:
     }
 
     bool read(std::string*);
+    bool write(std::string*);
 
     void terminate() {
         alive = false;

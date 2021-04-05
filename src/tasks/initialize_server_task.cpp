@@ -15,9 +15,9 @@
 
 void InitializeServerTask::perform() {
     Socket sock;
-    int port = 8000;
+    int port = state->config.port;
 
-    while (true) {
+    while (!state->config.port_fixed) {
         if (sock.init() == 0) {
             perror("Socket failed");
             exit(EXIT_FAILURE);
@@ -35,12 +35,12 @@ void InitializeServerTask::perform() {
         break;
     }
 
-    std::cout << "INFO: Listening on port: " << port << std::endl;
-
     if (sock.listen(3) < 0) {
         perror("listen");
         exit(EXIT_FAILURE);
     }
 
     state->server_socket = sock;
+
+    _alive = false;
 }

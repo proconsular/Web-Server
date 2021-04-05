@@ -68,7 +68,7 @@ void HTTPRequestParser::processRequestLine(HTTPRequest* request, const std::stri
     }
 
     request->method = words[0];
-    request->uri = words[1];
+    request->uri = URL::parse(words[1]);
     request->version = words[2];
 
     next(i, data);

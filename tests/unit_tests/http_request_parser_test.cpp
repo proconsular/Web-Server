@@ -10,7 +10,7 @@ TEST(HTTPRequestParserTests, RequestLine) {
     std::string data = "GET / HTTP/1.1";
     HTTPRequest* request = HTTPRequestParser::parse(data);
     ASSERT_EQ("GET", request->method);
-    ASSERT_EQ("/", request->uri);
+    ASSERT_EQ("/", request->uri.to_string());
     ASSERT_EQ("HTTP/1.1", request->version);
 }
 
@@ -30,7 +30,7 @@ TEST(HTTPRequestParserTests, RequestLine_Headers) {
     std::string data = "GET / HTTP/1.1\r\nHost: helloworld\r\ncontent-type:plain/text";
     HTTPRequest* request = HTTPRequestParser::parse(data);
     ASSERT_EQ("GET", request->method);
-    ASSERT_EQ("/", request->uri);
+    ASSERT_EQ("/", request->uri.to_string());
     ASSERT_EQ("HTTP/1.1", request->version);
     ASSERT_EQ("helloworld", request->headers["Host"]);
     ASSERT_EQ("plain/text", request->headers["content-type"]);
@@ -40,7 +40,7 @@ TEST(HTTPRequestParserTests, RequestLine_Headers_Body) {
     std::string data = "GET / HTTP/1.1\r\nContent-Length: 11\r\n\r\nHello world";
     HTTPRequest* request = HTTPRequestParser::parse(data);
     ASSERT_EQ("GET", request->method);
-    ASSERT_EQ("/", request->uri);
+    ASSERT_EQ("/", request->uri.to_string());
     ASSERT_EQ("HTTP/1.1", request->version);
     ASSERT_EQ("11", request->headers["Content-Length"]);
     ASSERT_EQ("Hello world", request->body);

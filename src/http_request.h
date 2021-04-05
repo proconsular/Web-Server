@@ -8,12 +8,15 @@
 #include <string>
 #include <map>
 
+#include "url.h"
+
 class HTTPRequest {
 public:
+    std::string* generate() const;
 
     std::string method;
     std::string version;
-    std::string uri;
+    URL uri;
 
     std::map<std::string, std::string> headers;
     std::string body;

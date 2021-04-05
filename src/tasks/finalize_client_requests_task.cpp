@@ -12,6 +12,7 @@ void FinalizeClientRequestsTask::perform() {
                 switch (request->type) {
                     case RetrieveFile: {
                         response->body = request->data;
+                        response->headers["Content-Type"] = getContentType(request->path.extension);
                         break;
                     }
                     default:
@@ -19,7 +20,7 @@ void FinalizeClientRequestsTask::perform() {
                         response->code = 501;
                         break;
                 }
-                state->http_response_queue.emplace_back(request->connection, response);
+                state->outbound_http_response_queue.emplace_back(request->connection, response);
                 break;
             }
             case Failed: {
@@ -33,7 +34,7 @@ void FinalizeClientRequestsTask::perform() {
                     default:
                         break;
                 }
-                state->http_response_queue.emplace_back(request->connection, response);
+                state->outbound_http_response_queue.emplace_back(request->connection, response);
                 break;
             }
             default:
@@ -44,9 +45,29 @@ void FinalizeClientRequestsTask::perform() {
         auto status = (*i)->status;
         if (status == RequestStatus::Complete || status == RequestStatus::Failed) {
             state->requests.erase(i);
-            std::cout << "INFO: Request Finalized" << std::endl;
         } else {
             i++;
         }
     }
+}
+
+std::string FinalizeClientRequestsTask::getContentType(const std::string &ext) {
+    std::map<std::string, std::string> ext_table = {
+            {"html", "text/html"},
+            {"js", "text/javascript"},
+            {"jpg", "image/jpeg"},
+            {"jpeg", "image/jpeg"},
+            {"png", "image/png"},
+            {"json", "application/json"},
+            {"ttf", "font/ttf"},
+            {"txt", "text/plain"},
+            {"wav", "audio/wav"},
+            {"xml", "application/xml"},
+            {"bin", "application/octet-stream"},
+            {"css", "text/css"},
+    };
+    if (ext_table.find(ext) != ext_table.end()) {
+        return ext_table[ext];
+    }
+    return "text/plain";
 }

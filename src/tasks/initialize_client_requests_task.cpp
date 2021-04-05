@@ -12,7 +12,6 @@ void InitializeClientRequestsTask::perform() {
                 case RetrieveFile: {
                     state->scheduler->add(new LoadRequestedFileTask(request, state->config));
                     request->status = RequestStatus::Working;
-                    std::cout << "INFO: Retrieve File Request WORKING" << std::endl;
                     break;
                 }
                 default:
