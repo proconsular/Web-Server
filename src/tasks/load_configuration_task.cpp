@@ -8,24 +8,29 @@
 
 #include "load_configuration_task.h"
 #include "json.hpp"
+#include "configuration.h"
 
 using json = nlohmann::json;
 
 void LoadConfigurationTask::perform() {
-    std::ifstream file("config.json");
+    auto filename = "config.json";
+    std::ifstream file(filename);
     if (!file.fail()) {
         json config;
         file >> config;
         file.close();
+        auto* new_config = new Configuration;
         if (config.find("base_url") != config.end()) {
-            _state->config.base_url = URL::parse(config["base_url"]);
+            new_config->base_url = URL::parse(config["base_url"]);
         }
         if (config.find("port") != config.end()) {
-            _state->config.port = config["port"];
+            new_config->port = config["port"];
         }
         if (config.find("keep-alive") != config.end()) {
-            _state->config.keep_alive = config["keep-alive"];
+            new_config->keep_alive = config["keep-alive"];
         }
+        new_config->from_file = filename;
+        _controller->apply(Action(SetConfiguration, new_config));
     }
     _alive = false;
 }

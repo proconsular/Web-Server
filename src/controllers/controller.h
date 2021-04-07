@@ -12,7 +12,7 @@ class Controller {
 public:
     explicit Controller(State* state): _state(state) {}
 
-    virtual void apply(Action*) = 0;
+    virtual void apply(const Action&) = 0;
 protected:
     State* _state;
 };

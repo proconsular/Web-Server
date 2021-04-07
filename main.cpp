@@ -15,24 +15,27 @@
 #include "tasks/send_http_requests_task.h"
 #include "tasks/log_events_task.h"
 
+#include "controllers/direct_controller.h"
+
 #include "state.h"
+#include "utils.h"
 
 int main() {
     auto* state = new State;
+    auto* controller = new DirectController(state);
 
-    state->scheduler->add(new LoadConfigurationTask(state));
-    state->scheduler->add(new InitializeServerTask(state));
-    state->scheduler->add(new ReceptionTask(state));
-    state->scheduler->add(new PruneConnectionsTask(state));
-    state->scheduler->add(new ReceiveRequestsTask(state));
-    state->scheduler->add(new ProcessHTTPRequestsTask(state));
-    state->scheduler->add(new InitializeClientRequestsTask(state));
-    state->scheduler->add(new FinalizeClientRequestsTask(state));
-    state->scheduler->add(new SendResponsesTask(state));
+    state->scheduler->add(new LoadConfigurationTask(controller));
+    state->scheduler->add(new InitializeServerTask(state, controller));
+    state->scheduler->add(new ReceptionTask(state, controller));
+    state->scheduler->add(new PruneConnectionsTask(state, controller));
+    state->scheduler->add(new ReceiveRequestsTask(state, controller));
+    state->scheduler->add(new ProcessHTTPRequestsTask(state, controller));
+    state->scheduler->add(new InitializeClientRequestsTask(state, controller));
+    state->scheduler->add(new FinalizeClientRequestsTask(state, controller));
+    state->scheduler->add(new SendResponsesTask(state, controller));
     state->scheduler->add(new InitializeHTTPRequestConnectionsTask(state));
     state->scheduler->add(new SendHTTPRequestsTask(state));
     state->scheduler->add(new ReceiveHTTPResponsesTask(state));
-    state->scheduler->add(new LogEventsTask(state, "log.txt"));
 
     auto url = URL::parse("http://www.google.com");
 

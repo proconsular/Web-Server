@@ -6,12 +6,14 @@
 #include "load_requested_file_task.h"
 
 void InitializeClientRequestsTask::perform() {
-    for (auto request: state->requests) {
+    for (const auto& pair: state->requests) {
+        auto request = new ClientRequest(*pair.second);
         if (request->status == RequestStatus::New) {
             switch (request->type) {
                 case RetrieveFile: {
-                    state->scheduler->add(new LoadRequestedFileTask(request, state->config));
+                    state->scheduler->add(new LoadRequestedFileTask(_controller, request, state->config));
                     request->status = RequestStatus::Working;
+                    _controller->apply(Action(ModifyClientRequest, request));
                     break;
                 }
                 default:

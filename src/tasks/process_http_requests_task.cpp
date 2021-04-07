@@ -13,7 +13,7 @@ void ProcessHTTPRequestsTask::perform() {
             client_request->type = Requests::RetrieveFile;
             client_request->uri = request->uri;
         }
-        state->requests.push_back(client_request);
+        _controller->apply(Action(CreateClientRequest, client_request));
     }
     state->inbound_http_request_queue.clear();
 }

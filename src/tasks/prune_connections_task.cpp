@@ -7,13 +7,12 @@
 #include <chrono>
 
 void PruneConnectionsTask::perform() {
-    for (int i = state->connections.size() - 1; i >= 0; i--) {
-        auto conn = state->connections[i];
+    for (auto iter = state->connections.cbegin(), next_iter = iter; iter != state->connections.cend(); iter = next_iter) {
+        next_iter++;
+        auto conn = iter->second;
         auto time_since_read = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::high_resolution_clock::now() - conn->last_read);
         if (!conn->alive || (time_since_read.count() >= state->config.keep_alive && conn->active_requests == 0)) {
-            state->connections.erase(state->connections.begin() + i);
-            close(conn->socket.id());
-            delete conn;
+            _controller->apply(Action(RemoveClientConnection, conn));
         }
     }
 }

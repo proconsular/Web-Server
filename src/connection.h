@@ -7,14 +7,16 @@
 
 #include <chrono>
 #include "socket.h"
+#include "utils.h"
 
 class Connection {
 public:
-    Connection(Socket socket) {
+    explicit Connection(Socket socket) {
         this->socket = socket;
         alive = true;
         last_read = std::chrono::high_resolution_clock::now();
         active_requests = 0;
+        _id = generate_hash_id(10);
     }
 
     bool read(std::string*);
@@ -24,11 +26,18 @@ public:
         alive = false;
     }
 
+    std::string id() {
+        return _id;
+    }
+
     Socket socket;
     bool alive;
 
     int active_requests;
     std::chrono::high_resolution_clock::time_point last_read;
+
+private:
+    std::string _id;
 };
 
 

@@ -7,14 +7,17 @@
 #include "http_request_parser.h"
 
 void ReceiveRequestsTask::perform() {
-    for (auto connection : state->connections) {
+    for (const auto& pair : state->connections) {
+        auto connection = new Connection(*pair.second);
         int error = connection->socket.get_error();
         if (error == 0) {
             auto* input = new std::string;
             if (connection->read(input)) {
                 HTTPRequest* request = HTTPRequestParser::parse(*input);
-                state->inbound_http_request_queue.emplace_back(connection, request);
                 connection->active_requests++;
+                connection->last_read = std::chrono::high_resolution_clock::now();
+                _controller->apply(Action(ModifyClientConnection, connection));
+                _controller->apply(Action(CreateHttpRequest, new HTTPRequestEnvelope(connection, request)));
             }
             delete input;
         } else {

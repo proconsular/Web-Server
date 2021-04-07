@@ -8,7 +8,8 @@ void SendResponsesTask::perform() {
     for (auto envelope: state->outbound_http_response_queue) {
         auto response = envelope.response->generate();
         envelope.connection->socket.write(response);
-        envelope.connection->active_requests--;
     }
-    state->outbound_http_response_queue.clear();
+    if (!state->outbound_http_response_queue.empty()) {
+        _controller->apply(Action(ClearHttpResponses));
+    }
 }

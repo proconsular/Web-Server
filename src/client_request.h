@@ -10,6 +10,8 @@
 
 #include "connection.h"
 #include "url.h"
+#include "identifiable.h"
+#include "utils.h"
 
 enum Requests {
     Unsupported,
@@ -23,9 +25,19 @@ enum RequestStatus {
     Failed,
 };
 
-class ClientRequest {
+class ClientRequest: public Identifiable {
 public:
-    ClientRequest(): type(Requests::Unsupported), status(RequestStatus::New) {}
+    explicit ClientRequest():
+        type(Requests::Unsupported),
+        status(RequestStatus::New),
+        data(nullptr),
+        connection(nullptr) {
+        _id = generate_hash_id(10);
+    }
+
+    [[nodiscard]] std::string id() const override {
+        return _id;
+    }
 
     Requests type;
     RequestStatus status;
@@ -35,6 +47,9 @@ public:
     std::string* data;
 
     Connection* connection;
+
+private:
+    std::string _id;
 };
 
 

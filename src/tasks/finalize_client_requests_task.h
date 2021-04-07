@@ -7,10 +7,11 @@
 
 #include "task.h"
 #include "state.h"
+#include "controllers/controller.h"
 
 class FinalizeClientRequestsTask: public Task {
 public:
-    FinalizeClientRequestsTask(State* state): state(state), _alive(true) {}
+    explicit FinalizeClientRequestsTask(State* state, Controller* controller): state(state), _controller(controller), _alive(true) {}
 
     void perform() override;
     bool alive() override {
@@ -20,6 +21,7 @@ public:
 private:
     std::string getContentType(const std::string&);
 
+    Controller* _controller;
     State* state;
     bool _alive;
 };

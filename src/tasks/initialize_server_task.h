@@ -6,11 +6,11 @@
 #define P8_WEB_SERVER_INITIALIZE_SERVER_TASK_H
 
 #include "task.h"
-#include "state.h"
+#include "controllers/controller.h"
 
 class InitializeServerTask: public Task {
 public:
-    InitializeServerTask(State* state): state(state), _alive(true) {};
+    explicit InitializeServerTask(State* state, Controller* controller): _state(state), _controller(controller), _alive(true) {};
 
     void perform() override;
 
@@ -18,7 +18,8 @@ public:
         return _alive;
     }
 private:
-    State* state;
+    const State* _state;
+    Controller* _controller;
     bool _alive;
 };
 

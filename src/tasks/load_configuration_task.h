@@ -7,17 +7,18 @@
 
 #include "task.h"
 #include "state.h"
+#include "controllers/controller.h"
 
 class LoadConfigurationTask: public Task {
 public:
-    LoadConfigurationTask(State* state): _state(state), _alive(true) {}
+    explicit LoadConfigurationTask(Controller* controller): _controller(controller), _alive(true) {}
 
     void perform() override;
     bool alive() override {
         return _alive;
     }
 private:
-    State* _state;
+    Controller* _controller;
     bool _alive;
 };
 

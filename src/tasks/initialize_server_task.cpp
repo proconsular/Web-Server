@@ -14,20 +14,20 @@
 #include <fcntl.h>
 
 void InitializeServerTask::perform() {
-    Socket sock;
-    int port = state->config.port;
+    auto* sock = new Socket;
+    int port = _state->config.port;
 
-    while (!state->config.port_fixed) {
-        if (sock.init() == 0) {
+    while (!_state->config.port_fixed) {
+        if (sock->init() == 0) {
             perror("Socket failed");
             exit(EXIT_FAILURE);
         }
 
-        fcntl(sock.id(), F_SETFL, O_NONBLOCK);
+        fcntl(sock->id(), F_SETFL, O_NONBLOCK);
 
-        sock.setup(port);
+        sock->setup(port);
 
-        if (sock.bind() < 0) {
+        if (sock->bind() < 0) {
             port++;
             continue;
         }
@@ -35,12 +35,12 @@ void InitializeServerTask::perform() {
         break;
     }
 
-    if (sock.listen(3) < 0) {
+    if (sock->listen(3) < 0) {
         perror("listen");
         exit(EXIT_FAILURE);
     }
 
-    state->server_socket = sock;
+    _controller->apply(Action(CreateServerSocket, sock));
 
     _alive = false;
 }

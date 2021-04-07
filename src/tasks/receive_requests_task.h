@@ -7,10 +7,11 @@
 
 #include "task.h"
 #include "state.h"
+#include "controllers/controller.h"
 
 class ReceiveRequestsTask: public Task {
 public:
-    ReceiveRequestsTask(State* state): state(state), _alive(true) {};
+    explicit ReceiveRequestsTask(State* state, Controller* controller): state(state), _controller(controller), _alive(true) {};
 
     void perform() override;
 
@@ -19,6 +20,7 @@ public:
     }
 private:
     State* state;
+    Controller* _controller;
     bool _alive;
 };
 

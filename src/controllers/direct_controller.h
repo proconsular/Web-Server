@@ -6,11 +6,15 @@
 #define P8_WEB_SERVER_DIRECT_CONTROLLER_H
 
 #include "controller.h"
+#include "receivers/receiver.h"
 
 class DirectController: public Controller {
 public:
+    explicit DirectController(State* state);
 
-    void apply(Action *) override;
+    void apply(const Action&) override;
+private:
+    std::vector<Receiver*> _receivers;
 };
 
 

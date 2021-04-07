@@ -7,13 +7,11 @@
 
 #include "task.h"
 #include "state.h"
+#include "controllers/controller.h"
 
 class ReceptionTask: public Task {
 public:
-    ReceptionTask(State* state) {
-        this->state = state;
-        _alive = true;
-    }
+    explicit ReceptionTask(State* state, Controller* controller): state(state), _controller(controller), _alive(true) {}
 
     void perform();
 
@@ -21,6 +19,7 @@ public:
         return _alive;
     }
 private:
+    Controller* _controller;
     State* state;
     bool _alive;
 };

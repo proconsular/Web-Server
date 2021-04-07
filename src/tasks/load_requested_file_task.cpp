@@ -32,5 +32,6 @@ void LoadRequestedFileTask::perform() {
     } else {
         _request->status = RequestStatus::Failed;
     }
+    _controller->apply(Action(ModifyClientRequest, _request));
     _alive = false;
 }

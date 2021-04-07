@@ -6,12 +6,15 @@
 #define P8_WEB_SERVER_LOAD_REQUESTED_FILE_TASK_H
 
 #include "task.h"
+
+#include <utility>
 #include "client_request.h"
 #include "configuration.h"
+#include "controllers/controller.h"
 
 class LoadRequestedFileTask: public Task {
 public:
-    LoadRequestedFileTask(ClientRequest* request, const Configuration& config): _request(request), config(config), _alive(true) {}
+    explicit LoadRequestedFileTask(Controller* controller, ClientRequest* request, Configuration config): _controller(controller), _request(request), config(std::move(config)), _alive(true) {}
 
     void perform() override;
     bool alive() override {
@@ -20,6 +23,7 @@ public:
 
     Configuration config;
 private:
+    Controller* _controller;
     ClientRequest* _request;
     bool _alive;
 };

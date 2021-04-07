@@ -4,6 +4,7 @@
 
 #include "utils.h"
 #include <math.h>
+#include <map>
 
 std::vector<std::string> split_string(const std::string& separator, const std::string& str) {
     std::vector<std::string> parts;
@@ -62,4 +63,14 @@ int32_t decode_hex_str(const std::string& str) {
     }
 
     return num;
+}
+
+std::string generate_hash_id(int length) {
+    std::string output;
+
+    for (int i = 0; i < length; i++) {
+        output.push_back('!' + rand() % 78);
+    }
+
+    return output;
 }

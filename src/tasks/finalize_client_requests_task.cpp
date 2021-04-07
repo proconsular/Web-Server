@@ -3,9 +3,11 @@
 //
 
 #include "finalize_client_requests_task.h"
+#include "client_request.h"
 
 void FinalizeClientRequestsTask::perform() {
-    for (auto request: state->requests) {
+    for (auto pair: state->requests) {
+        auto request = new ClientRequest(*pair.second);
         switch (request->status) {
             case Complete: {
                 auto* response = new HTTPResponse(200, "OK", "HTTP/1.1");
@@ -20,7 +22,8 @@ void FinalizeClientRequestsTask::perform() {
                         response->code = 501;
                         break;
                 }
-                state->outbound_http_response_queue.emplace_back(request->connection, response);
+//                state->outbound_http_response_queue.emplace_back(request->connection, response);
+                _controller->apply(Action(CreateHttpResponse, new HTTPResponseEnvelope(request->connection, response)));
                 break;
             }
             case Failed: {
@@ -34,19 +37,18 @@ void FinalizeClientRequestsTask::perform() {
                     default:
                         break;
                 }
-                state->outbound_http_response_queue.emplace_back(request->connection, response);
+                _controller->apply(Action(CreateHttpResponse, new HTTPResponseEnvelope(request->connection, response)));
                 break;
             }
             default:
                 break;
         }
     }
-    for (auto i = state->requests.begin(); i != state->requests.end();) {
-        auto status = (*i)->status;
-        if (status == RequestStatus::Complete || status == RequestStatus::Failed) {
-            state->requests.erase(i);
-        } else {
-            i++;
+    for (auto iter = state->requests.cbegin(), next_iter = iter; iter != state->requests.cend(); iter = next_iter) {
+        auto request = iter->second;
+        next_iter++;
+        if (request->status == Complete || request->status == Failed) {
+            _controller->apply(Action(RemoveClientRequest, request));
         }
     }
 }

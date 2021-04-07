@@ -21,6 +21,8 @@ public:
     int keep_alive;
 
     bool port_fixed;
+
+    std::string from_file;
 };
 
 #endif //P8_WEB_SERVER_CONFIGURATION_H

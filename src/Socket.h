@@ -29,8 +29,12 @@ public:
 
     void setup(int);
 
-    int id() {
+    int id() const {
         return _id;
+    }
+
+    int port() const {
+        return _port;
     }
 private:
     int _id, _port;

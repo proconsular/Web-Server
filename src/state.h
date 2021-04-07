@@ -12,7 +12,6 @@
 #include "http_response_envelope.h"
 #include "configuration.h"
 #include "http_request_carrier.h"
-#include "events.h"
 
 #include <vector>
 
@@ -23,8 +22,8 @@ public:
     }
 
     Socket server_socket;
-    std::vector<Connection*> connections;
-    std::vector<ClientRequest*> requests;
+    std::map<std::string, Connection*> connections;
+    std::map<std::string, ClientRequest*> requests;
 
     std::vector<HTTPRequestCarrier*> outbound_http_request_queue;
     std::vector<HTTPResponseEnvelope> inbound_http_response_queue;

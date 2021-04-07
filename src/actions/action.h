@@ -9,20 +9,24 @@ enum Actions {
     None,
     CreateHttpRequest,
     CreateClientConnection,
+    ModifyClientConnection,
+    RemoveClientConnection,
     CreateServerSocket,
     SetConfiguration,
-    RemoveClientConnection,
     CreateClientRequest,
     ModifyClientRequest,
+    RemoveClientRequest,
     CreateHttpResponse,
     ClearHttpResponses,
 };
 
 class Action {
 public:
-    explicit Action(Actions type): type(type) {}
+    explicit Action(Actions type, void* data): type(type), data(data) {}
+    explicit Action(Actions type): type(type), data(nullptr) {}
 
     Actions type;
+    void* data;
 };
 
 #endif //P8_WEB_SERVER_ACTION_H
