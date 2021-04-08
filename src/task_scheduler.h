@@ -13,9 +13,9 @@ class TaskScheduler {
 public:
     void run();
 
-    void add(Task*);
+    void add(const std::shared_ptr<Task>&);
 private:
-    std::vector<Task*> tasks;
+    std::vector<std::shared_ptr<Task>> tasks;
 };
 
 

@@ -46,7 +46,7 @@ public:
     URL path;
     std::string* data;
 
-    Connection* connection;
+    std::shared_ptr<Connection> connection;
 
 private:
     std::string _id;

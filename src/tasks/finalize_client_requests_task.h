@@ -6,12 +6,14 @@
 #define P8_WEB_SERVER_FINALIZE_CLIENT_REQUESTS_TASK_H
 
 #include "task.h"
+
+#include <utility>
 #include "state.h"
 #include "controllers/controller.h"
 
 class FinalizeClientRequestsTask: public Task {
 public:
-    explicit FinalizeClientRequestsTask(State* state, Controller* controller): state(state), _controller(controller), _alive(true) {}
+    explicit FinalizeClientRequestsTask(std::shared_ptr<State> state, std::shared_ptr<Controller> controller): state(std::move(state)), _controller(std::move(controller)), _alive(true) {}
 
     void perform() override;
     bool alive() override {
@@ -21,8 +23,8 @@ public:
 private:
     std::string getContentType(const std::string&);
 
-    Controller* _controller;
-    State* state;
+    std::shared_ptr<Controller> _controller;
+    std::shared_ptr<State> state;
     bool _alive;
 };
 

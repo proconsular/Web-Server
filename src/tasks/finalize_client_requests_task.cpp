@@ -5,12 +5,14 @@
 #include "finalize_client_requests_task.h"
 #include "client_request.h"
 
+#include <memory>
+
 void FinalizeClientRequestsTask::perform() {
-    for (auto pair: state->requests) {
-        auto request = new ClientRequest(*pair.second);
+    for (const auto& pair: state->requests) {
+        auto request = std::make_shared<ClientRequest>(*pair.second);
         switch (request->status) {
             case Complete: {
-                auto* response = new HTTPResponse(200, "OK", "HTTP/1.1");
+                auto response = std::make_shared<HTTPResponse>(200, "OK", "HTTP/1.1");
                 switch (request->type) {
                     case RetrieveFile: {
                         response->body = request->data;
@@ -22,12 +24,11 @@ void FinalizeClientRequestsTask::perform() {
                         response->code = 501;
                         break;
                 }
-//                state->outbound_http_response_queue.emplace_back(request->connection, response);
-                _controller->apply(Action(CreateHttpResponse, new HTTPResponseEnvelope(request->connection, response)));
+                _controller->apply(Action(CreateHttpResponse, std::make_shared<HTTPResponseEnvelope>(request->connection, response)));
                 break;
             }
             case Failed: {
-                auto* response = new HTTPResponse(500, "Internal Server Error", "HTTP/1.1");
+                auto response = std::make_shared<HTTPResponse>(500, "Internal Server Error", "HTTP/1.1");
                 switch (request->type) {
                     case RetrieveFile: {
                         response->code = 404;
@@ -37,7 +38,7 @@ void FinalizeClientRequestsTask::perform() {
                     default:
                         break;
                 }
-                _controller->apply(Action(CreateHttpResponse, new HTTPResponseEnvelope(request->connection, response)));
+                _controller->apply(Action(CreateHttpResponse, std::make_shared<HTTPResponseEnvelope>(request->connection, response)));
                 break;
             }
             default:

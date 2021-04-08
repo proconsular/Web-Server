@@ -13,7 +13,6 @@
 #include "tasks/initialize_http_request_connections_task.h"
 #include "tasks/receive_http_responses_task.h"
 #include "tasks/send_http_requests_task.h"
-#include "tasks/log_events_task.h"
 
 #include "controllers/direct_controller.h"
 
@@ -21,21 +20,21 @@
 #include "utils.h"
 
 int main() {
-    auto* state = new State;
-    auto* controller = new DirectController(state);
+    auto state = std::make_shared<State>();
+    auto controller = std::make_shared<DirectController>(state);
 
-    state->scheduler->add(new LoadConfigurationTask(controller));
-    state->scheduler->add(new InitializeServerTask(state, controller));
-    state->scheduler->add(new ReceptionTask(state, controller));
-    state->scheduler->add(new PruneConnectionsTask(state, controller));
-    state->scheduler->add(new ReceiveRequestsTask(state, controller));
-    state->scheduler->add(new ProcessHTTPRequestsTask(state, controller));
-    state->scheduler->add(new InitializeClientRequestsTask(state, controller));
-    state->scheduler->add(new FinalizeClientRequestsTask(state, controller));
-    state->scheduler->add(new SendResponsesTask(state, controller));
-    state->scheduler->add(new InitializeHTTPRequestConnectionsTask(state));
-    state->scheduler->add(new SendHTTPRequestsTask(state));
-    state->scheduler->add(new ReceiveHTTPResponsesTask(state));
+    state->scheduler->add(std::make_shared<LoadConfigurationTask>(controller));
+    state->scheduler->add(std::make_shared<InitializeServerTask>(state, controller));
+    state->scheduler->add(std::make_shared<ReceptionTask>(state, controller));
+    state->scheduler->add(std::make_shared<PruneConnectionsTask>(state, controller));
+    state->scheduler->add(std::make_shared<ReceiveRequestsTask>(state, controller));
+    state->scheduler->add(std::make_shared<ProcessHTTPRequestsTask>(state, controller));
+    state->scheduler->add(std::make_shared<InitializeClientRequestsTask>(state, controller));
+    state->scheduler->add(std::make_shared<FinalizeClientRequestsTask>(state, controller));
+    state->scheduler->add(std::make_shared<SendResponsesTask>(state, controller));
+    state->scheduler->add(std::make_shared<InitializeHTTPRequestConnectionsTask>(state));
+    state->scheduler->add(std::make_shared<SendHTTPRequestsTask>(state));
+    state->scheduler->add(std::make_shared<ReceiveHTTPResponsesTask>(state));
 
     auto url = URL::parse("http://www.google.com");
 

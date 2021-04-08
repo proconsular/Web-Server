@@ -6,16 +6,18 @@
 #define P8_WEB_SERVER_STATE_ACTION_RECEIVER_H
 
 #include "receiver.h"
+
+#include <utility>
 #include "state.h"
 
 class StateActionReceiver: public Receiver {
 public:
-    explicit StateActionReceiver(State* state): _state(state) {}
+    explicit StateActionReceiver(std::shared_ptr<State> state): _state(std::move(state)) {}
 
     void receive(const Action &) override;
 
 private:
-    State* _state;
+    std::shared_ptr<State> _state;
 };
 
 

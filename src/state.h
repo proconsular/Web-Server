@@ -18,12 +18,12 @@
 class State {
 public:
     State() {
-        scheduler = new TaskScheduler;
+        scheduler = std::make_shared<TaskScheduler>();
     }
 
     Socket server_socket;
-    std::map<std::string, Connection*> connections;
-    std::map<std::string, ClientRequest*> requests;
+    std::map<std::string, std::shared_ptr<Connection>> connections;
+    std::map<std::string, std::shared_ptr<ClientRequest>> requests;
 
     std::vector<HTTPRequestCarrier*> outbound_http_request_queue;
     std::vector<HTTPResponseEnvelope> inbound_http_response_queue;
@@ -31,9 +31,9 @@ public:
     std::vector<HTTPRequestEnvelope> inbound_http_request_queue;
     std::vector<HTTPResponseEnvelope> outbound_http_response_queue;
 
-    TaskScheduler* scheduler;
+    std::shared_ptr<TaskScheduler> scheduler;
 
-    Configuration config;
+    std::shared_ptr<Configuration> config;
 };
 
 

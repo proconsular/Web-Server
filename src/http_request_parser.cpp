@@ -6,10 +6,10 @@
 #include <vector>
 #include <iostream>
 
-HTTPRequest * HTTPRequestParser::parse(const std::string &data) {
-    HTTPRequest* request = new HTTPRequest;
+std::shared_ptr<HTTPRequest> HTTPRequestParser::parse(const std::shared_ptr<std::string>& data) {
+    auto request = std::make_shared<HTTPRequest>();
 
-    std::string::const_iterator cursor = data.begin();
+    std::string::const_iterator cursor = data->begin();
 
     processRequestLine(request, data, cursor);
     processHeaders(request, data, cursor);
@@ -22,11 +22,11 @@ HTTPRequest * HTTPRequestParser::parse(const std::string &data) {
     return request;
 }
 
-void HTTPRequestParser::processHeaders(HTTPRequest *request, const std::string &data, std::string::const_iterator &cursor) {
+void HTTPRequestParser::processHeaders(const std::shared_ptr<HTTPRequest>& request, const std::shared_ptr<std::string> &data, std::string::const_iterator &cursor) {
     std::string::const_iterator i = cursor;
 
     std::string key;
-    for (; cursor < data.end(); cursor++) {
+    for (; cursor < data->end(); cursor++) {
         if (*cursor == ':') {
             key = std::string(i, cursor);
             i = cursor + 1;
@@ -42,17 +42,17 @@ void HTTPRequestParser::processHeaders(HTTPRequest *request, const std::string &
         }
     }
 
-    if (!key.empty() && cursor == data.end()) {
+    if (!key.empty() && cursor == data->end()) {
         while (isspace(*i)) i++;
         request->headers[key] = std::string(i, cursor);
     }
 }
 
-void HTTPRequestParser::processRequestLine(HTTPRequest* request, const std::string& data, std::string::const_iterator& i) {
+void HTTPRequestParser::processRequestLine(const std::shared_ptr<HTTPRequest>& request, const std::shared_ptr<std::string>& data, std::string::const_iterator& i) {
     std::vector<std::string> words;
     std::string word;
 
-    for (; i != data.end(); i++) {
+    for (; i != data->end(); i++) {
         if (*i == '\r')
             break;
         if (!isspace(*i)) {

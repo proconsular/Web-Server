@@ -6,18 +6,20 @@
 #define P8_WEB_SERVER_INITIALIZE_HTTP_REQUEST_CONNECTIONS_TASK_H
 
 #include "task.h"
+
+#include <utility>
 #include "state.h"
 
 class InitializeHTTPRequestConnectionsTask: public Task {
 public:
-    explicit InitializeHTTPRequestConnectionsTask(State* state): _state(state), _alive(true) {}
+    explicit InitializeHTTPRequestConnectionsTask(std::shared_ptr<State> state): _state(std::move(state)), _alive(true) {}
 
     void perform() override;
     bool alive() override {
         return _alive;
     }
 private:
-    State* _state;
+    std::shared_ptr<State> _state;
     bool _alive;
 };
 

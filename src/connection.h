@@ -19,7 +19,7 @@ public:
         _id = generate_hash_id(10);
     }
 
-    bool read(std::string*);
+    bool read(const std::shared_ptr<std::string>&);
     bool write(std::string*);
 
     void terminate() {

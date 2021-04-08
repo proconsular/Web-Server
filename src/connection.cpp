@@ -4,7 +4,7 @@
 
 #include "connection.h"
 
-bool Connection::read(std::string *output) {
+bool Connection::read(const std::shared_ptr<std::string>& output) {
     int amount = socket.read(output);
     if (amount > 0) {
         last_read = std::chrono::high_resolution_clock::now();

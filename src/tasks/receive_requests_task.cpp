@@ -8,18 +8,17 @@
 
 void ReceiveRequestsTask::perform() {
     for (const auto& pair : state->connections) {
-        auto connection = new Connection(*pair.second);
+        auto connection = std::make_shared<Connection>(*pair.second);
         int error = connection->socket.get_error();
         if (error == 0) {
-            auto* input = new std::string;
+            auto input = std::make_shared<std::string>();
             if (connection->read(input)) {
-                HTTPRequest* request = HTTPRequestParser::parse(*input);
+                auto request = HTTPRequestParser::parse(input);
                 connection->active_requests++;
                 connection->last_read = std::chrono::high_resolution_clock::now();
                 _controller->apply(Action(ModifyClientConnection, connection));
-                _controller->apply(Action(CreateHttpRequest, new HTTPRequestEnvelope(connection, request)));
+                _controller->apply(Action(CreateHttpRequest, std::make_shared<HTTPRequestEnvelope>(connection, request)));
             }
-            delete input;
         } else {
             connection->terminate();
         }

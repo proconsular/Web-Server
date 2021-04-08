@@ -19,7 +19,7 @@ void LoadConfigurationTask::perform() {
         json config;
         file >> config;
         file.close();
-        auto* new_config = new Configuration;
+        auto new_config = std::make_shared<Configuration>();
         if (config.find("base_url") != config.end()) {
             new_config->base_url = URL::parse(config["base_url"]);
         }

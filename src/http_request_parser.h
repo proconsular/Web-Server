@@ -9,13 +9,13 @@
 
 class HTTPRequestParser {
 public:
-    static HTTPRequest* parse(const std::string&);
+    static std::shared_ptr<HTTPRequest> parse(const std::shared_ptr<std::string>&);
 
 private:
-    static void processRequestLine(HTTPRequest*, const std::string&, std::string::const_iterator&);
-    static void processHeaders(HTTPRequest*, const std::string&, std::string::const_iterator&);
-    static void next(std::string::const_iterator& i, const std::string& data) {
-        while (i != data.end() && (*i == '\r' || *i == '\n')) ++i;
+    static void processRequestLine(const std::shared_ptr<HTTPRequest>&, const std::shared_ptr<std::string>&, std::string::const_iterator&);
+    static void processHeaders(const std::shared_ptr<HTTPRequest>&, const std::shared_ptr<std::string>&, std::string::const_iterator&);
+    static void next(std::string::const_iterator& i, const std::shared_ptr<std::string>& data) {
+        while (i != data->end() && (*i == '\r' || *i == '\n')) ++i;
     }
 };
 

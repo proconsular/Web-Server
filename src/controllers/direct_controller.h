@@ -10,7 +10,7 @@
 
 class DirectController: public Controller {
 public:
-    explicit DirectController(State* state);
+    explicit DirectController(std::shared_ptr<State> state);
 
     void apply(const Action&) override;
 private:

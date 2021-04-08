@@ -5,15 +5,17 @@
 #ifndef P8_WEB_SERVER_HTTP_RESPONSE_ENVELOPE_H
 #define P8_WEB_SERVER_HTTP_RESPONSE_ENVELOPE_H
 
+#include <utility>
+
 #include "connection.h"
 #include "http_response.h"
 
 class HTTPResponseEnvelope {
 public:
-    HTTPResponseEnvelope(Connection* conn, HTTPResponse* response): connection(conn), response(response) {}
+    HTTPResponseEnvelope(std::shared_ptr<Connection> conn, std::shared_ptr<HTTPResponse> response): connection(std::move(conn)), response(std::move(response)) {}
 
-    Connection* connection;
-    HTTPResponse* response;
+    std::shared_ptr<Connection> connection;
+    std::shared_ptr<HTTPResponse> response;
 };
 
 #endif //P8_WEB_SERVER_HTTP_RESPONSE_ENVELOPE_H

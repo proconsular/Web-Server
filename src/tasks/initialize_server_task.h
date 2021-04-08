@@ -6,11 +6,13 @@
 #define P8_WEB_SERVER_INITIALIZE_SERVER_TASK_H
 
 #include "task.h"
+
+#include <utility>
 #include "controllers/controller.h"
 
 class InitializeServerTask: public Task {
 public:
-    explicit InitializeServerTask(State* state, Controller* controller): _state(state), _controller(controller), _alive(true) {};
+    explicit InitializeServerTask(std::shared_ptr<State> state, std::shared_ptr<Controller> controller): _state(std::move(state)), _controller(std::move(controller)), _alive(true) {};
 
     void perform() override;
 
@@ -18,8 +20,8 @@ public:
         return _alive;
     }
 private:
-    const State* _state;
-    Controller* _controller;
+    std::shared_ptr<State> _state;
+    std::shared_ptr<Controller> _controller;
     bool _alive;
 };
 

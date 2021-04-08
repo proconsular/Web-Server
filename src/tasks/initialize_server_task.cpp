@@ -14,10 +14,10 @@
 #include <fcntl.h>
 
 void InitializeServerTask::perform() {
-    auto* sock = new Socket;
-    int port = _state->config.port;
+    auto sock = std::make_shared<Socket>();
+    int port = _state->config->port;
 
-    while (!_state->config.port_fixed) {
+    while (!_state->config->port_fixed) {
         if (sock->init() == 0) {
             perror("Socket failed");
             exit(EXIT_FAILURE);

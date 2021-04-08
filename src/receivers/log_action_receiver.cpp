@@ -20,17 +20,17 @@ void LogActionReceiver::receive(const Action &action) {
     std::string output;
     switch (action.type) {
         case SetConfiguration: {
-            auto* config = reinterpret_cast<Configuration*>(action.data);
+            auto config = std::static_pointer_cast<Configuration>(action.data);
             output.append(string_format("LOADED: config: %s; path: %s, port: %i", config->from_file.c_str(), config->base_url.to_string().c_str(), config->port));
             break;
         }
         case CreateServerSocket: {
-            auto* socket = reinterpret_cast<Socket*>(action.data);
+            auto socket = std::static_pointer_cast<Socket>(action.data);
             output.append(string_format("STARTED: server: %i", socket->port()));
             break;
         }
         case CreateHttpRequest: {
-            auto* envelope = reinterpret_cast<HTTPRequestEnvelope*>(action.data);
+            auto envelope = std::static_pointer_cast<HTTPRequestEnvelope>(action.data);
             output.append(
                     string_format("REQUEST: %s %s %s",
                                   envelope->request->method.c_str(),
@@ -40,17 +40,17 @@ void LogActionReceiver::receive(const Action &action) {
             break;
         }
         case CreateClientConnection: {
-            auto* connection = reinterpret_cast<Connection*>(action.data);
+            auto connection = std::static_pointer_cast<Connection>(action.data);
             output.append(string_format("ESTABLISHED: client connection: %s", connection->id().c_str()));
             break;
         }
         case RemoveClientConnection: {
-            auto* connection = reinterpret_cast<Connection*>(action.data);
+            auto connection = std::static_pointer_cast<Connection>(action.data);
             output.append(string_format("DISCONNECTED: client connection: %s", connection->id().c_str()));
             break;
         }
         case CreateClientRequest: {
-            auto* request = reinterpret_cast<ClientRequest*>(action.data);
+            auto request = std::static_pointer_cast<ClientRequest>(action.data);
             std::map<Requests, std::string> table = {
                     {Unsupported, "Unsupported"},
                     {RetrieveFile, "Retrieve File"}
@@ -59,7 +59,7 @@ void LogActionReceiver::receive(const Action &action) {
             break;
         }
         case ModifyClientRequest: {
-            auto* request = reinterpret_cast<ClientRequest*>(action.data);
+            auto request = std::static_pointer_cast<ClientRequest>(action.data);
             std::map<Requests, std::string> table = {
                     {Unsupported, "Unsupported"},
                     {RetrieveFile, "Retrieve File"}
@@ -74,7 +74,7 @@ void LogActionReceiver::receive(const Action &action) {
             break;
         }
         case CreateHttpResponse: {
-            auto* response = reinterpret_cast<HTTPResponseEnvelope*>(action.data);
+            auto response = std::static_pointer_cast<HTTPResponseEnvelope>(action.data);
             output.append(string_format("RESPONSE: %i %s %s to %s", response->response->code, response->response->status.c_str(), response->response->version.c_str(), response->connection->id().c_str()));
             break;
         }

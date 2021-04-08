@@ -34,7 +34,7 @@ bool Socket::accept(Socket& socket) {
     return id >= 0;
 }
 
-int Socket::read(std::string *output) {
+int Socket::read(const std::shared_ptr<std::string>& output) const {
     const int BUFFER_SIZE = 1024;
 
     int amount_read = 0;

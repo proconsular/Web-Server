@@ -14,6 +14,7 @@ public:
         port = 8000;
         keep_alive = 30;
         port_fixed = false;
+        base_url = URL::parse("/");
     }
 
     URL base_url;

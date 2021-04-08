@@ -9,7 +9,7 @@
 #include <unistd.h>
 
 void LoadRequestedFileTask::perform() {
-    auto url = URL::append(config.base_url, _request->uri);
+    auto url = URL::append(config->base_url, _request->uri);
     if (_request->uri.is_root && _request->uri.components.empty()) {
         url = URL::append(url, URL::parse("index.html"));
     }

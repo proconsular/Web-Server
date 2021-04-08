@@ -14,17 +14,17 @@
 
 class LoadRequestedFileTask: public Task {
 public:
-    explicit LoadRequestedFileTask(Controller* controller, ClientRequest* request, Configuration config): _controller(controller), _request(request), config(std::move(config)), _alive(true) {}
+    explicit LoadRequestedFileTask(std::shared_ptr<Controller> controller, std::shared_ptr<ClientRequest> request, std::shared_ptr<Configuration> config): _controller(std::move(controller)), _request(std::move(request)), config(std::move(config)), _alive(true) {}
 
     void perform() override;
     bool alive() override {
         return _alive;
     }
 
-    Configuration config;
+    std::shared_ptr<Configuration> config;
 private:
-    Controller* _controller;
-    ClientRequest* _request;
+    std::shared_ptr<Controller> _controller;
+    std::shared_ptr<ClientRequest> _request;
     bool _alive;
 };
 

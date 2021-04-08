@@ -6,12 +6,14 @@
 #define P8_WEB_SERVER_PRUNE_CONNECTIONS_TASK_H
 
 #include "task.h"
+
+#include <utility>
 #include "state.h"
 #include "controllers/controller.h"
 
 class PruneConnectionsTask: public Task {
 public:
-    PruneConnectionsTask(State* state, Controller* controller): state(state), _controller(controller), _alive(true) {};
+    PruneConnectionsTask(std::shared_ptr<State> state, std::shared_ptr<Controller> controller): state(std::move(state)), _controller(std::move(controller)), _alive(true) {};
 
     void perform() override;
 
@@ -19,8 +21,8 @@ public:
         return _alive;
     }
 private:
-    Controller* _controller;
-    State* state;
+    std::shared_ptr<Controller> _controller;
+    std::shared_ptr<State> state;
     bool _alive;
 };
 

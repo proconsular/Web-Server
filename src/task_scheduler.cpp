@@ -4,7 +4,7 @@
 
 #include "task_scheduler.h"
 
-void TaskScheduler::add(Task *task) {
+void TaskScheduler::add(const std::shared_ptr<Task>& task) {
     tasks.push_back(task);
 }
 

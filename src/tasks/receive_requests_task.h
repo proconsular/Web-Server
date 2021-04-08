@@ -6,12 +6,14 @@
 #define P8_WEB_SERVER_RECEIVE_REQUESTS_TASK_H
 
 #include "task.h"
+
+#include <utility>
 #include "state.h"
 #include "controllers/controller.h"
 
 class ReceiveRequestsTask: public Task {
 public:
-    explicit ReceiveRequestsTask(State* state, Controller* controller): state(state), _controller(controller), _alive(true) {};
+    explicit ReceiveRequestsTask(std::shared_ptr<State> state, std::shared_ptr<Controller> controller): state(std::move(state)), _controller(std::move(controller)), _alive(true) {};
 
     void perform() override;
 
@@ -19,8 +21,8 @@ public:
         return _alive;
     }
 private:
-    State* state;
-    Controller* _controller;
+    std::shared_ptr<State> state;
+    std::shared_ptr<Controller> _controller;
     bool _alive;
 };
 

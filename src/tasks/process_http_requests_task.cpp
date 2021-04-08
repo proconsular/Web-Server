@@ -7,7 +7,7 @@
 void ProcessHTTPRequestsTask::perform() {
     for (auto envelope: state->inbound_http_request_queue) {
         auto request = envelope.request;
-        auto* client_request = new ClientRequest;
+        auto client_request = std::make_shared<ClientRequest>();
         client_request->connection = envelope.connection;
         if (request->method == "GET") {
             client_request->type = Requests::RetrieveFile;
