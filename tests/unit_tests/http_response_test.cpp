@@ -17,15 +17,15 @@ TEST(HTTPResponseGenerationTests, Output1) {
 
 TEST(HTTPResponseGenerationTests, Output2) {
     HTTPResponse ok = HTTPResponse::OK();
-    ok.body = new std::string("Hello world");
+    ok.body = std::make_shared<std::string>("Hello world");
     ASSERT_EQ("HTTP/1.1 200 OK\r\nContent-Length: 11\r\n\r\nHello world", *ok.generate());
 }
 
 TEST(HTTPResponseGenerationTests, Output_Headers) {
     HTTPResponse ok = HTTPResponse::OK();
-    ok.body = new std::string("Hello world");
-    ok.headers["Content-Type"] = "text/plain";
-    ok.headers["Cache-Control"] = "no-cache";
-    ok.headers["Host"] = "localhost:8080";
+    ok.body = std::make_shared<std::string>("Hello world");
+    ok.setHeader("Content-Type", "text/plain");
+    ok.setHeader("Cache-Control", "no-cache");
+    ok.setHeader("Host", "localhost:8080");
     ASSERT_EQ("HTTP/1.1 200 OK\r\nCache-Control: no-cache\r\nContent-Type: text/plain\r\nHost: localhost:8080\r\nContent-Length: 11\r\n\r\nHello world", *ok.generate());
 }

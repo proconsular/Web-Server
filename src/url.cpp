@@ -109,8 +109,9 @@ const char* URL::domain_to_cstr() const {
     auto cpy_domain = std::vector(domain);
     std::reverse(cpy_domain.begin(), cpy_domain.end());
     auto str = join(".", cpy_domain);
-    char* data = new char[str.size()];
+    char* data = new char[str.size() + 1];
     memcpy(data, str.c_str(), str.size());
+    data[str.size()] = '\0';
     return data;
 }
 

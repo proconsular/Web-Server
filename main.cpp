@@ -32,20 +32,22 @@ int main() {
     state->scheduler->add(std::make_shared<InitializeClientRequestsTask>(state, controller));
     state->scheduler->add(std::make_shared<FinalizeClientRequestsTask>(state, controller));
     state->scheduler->add(std::make_shared<SendResponsesTask>(state, controller));
-    state->scheduler->add(std::make_shared<InitializeHTTPRequestConnectionsTask>(state));
-    state->scheduler->add(std::make_shared<SendHTTPRequestsTask>(state));
-    state->scheduler->add(std::make_shared<ReceiveHTTPResponsesTask>(state));
+    state->scheduler->add(std::make_shared<InitializeHTTPRequestConnectionsTask>(state, controller));
+    state->scheduler->add(std::make_shared<SendHTTPRequestsTask>(state, controller));
+    state->scheduler->add(std::make_shared<ReceiveHTTPResponsesTask>(state, controller));
 
-    auto url = URL::parse("http://www.google.com");
+    controller->apply(Action(StartProgram));
 
-    auto* request = new HTTPRequest;
+    auto url = URL::parse("http://voxday.blogspot.com/");
+
+    auto request = std::make_shared<HTTPRequest>();
     request->method = "GET";
     request->version = "HTTP/1.1";
     request->uri = URL::parse("/");
     request->headers["Content-Length"] = "0";
     request->headers["Host"] = url.domain_to_cstr();
 
-//    state->outbound_http_request_queue.push_back(new HTTPRequestCarrier(url, request));
+    controller->apply(Action(CreateOutboundHttpRequest, std::make_shared<HTTPRequestCarrier>(url, request)));
 
     state->scheduler->run();
 

@@ -7,8 +7,8 @@
 #include "utils.h"
 
 TEST(HTTPRequestParserTests, RequestLine) {
-    std::string data = "GET / HTTP/1.1";
-    HTTPRequest* request = HTTPRequestParser::parse(data);
+    auto data = std::make_shared<std::string>("GET / HTTP/1.1");
+    std::shared_ptr<HTTPRequest> request = HTTPRequestParser::parse(data);
     ASSERT_EQ("GET", request->method);
     ASSERT_EQ("/", request->uri.to_string());
     ASSERT_EQ("HTTP/1.1", request->version);
@@ -27,8 +27,8 @@ TEST(HTTPRequestParserTests, Split) {
 }
 
 TEST(HTTPRequestParserTests, RequestLine_Headers) {
-    std::string data = "GET / HTTP/1.1\r\nHost: helloworld\r\ncontent-type:plain/text";
-    HTTPRequest* request = HTTPRequestParser::parse(data);
+    auto data = std::make_shared<std::string>("GET / HTTP/1.1\r\nHost: helloworld\r\ncontent-type:plain/text");
+    std::shared_ptr<HTTPRequest> request = HTTPRequestParser::parse(data);
     ASSERT_EQ("GET", request->method);
     ASSERT_EQ("/", request->uri.to_string());
     ASSERT_EQ("HTTP/1.1", request->version);
@@ -37,11 +37,11 @@ TEST(HTTPRequestParserTests, RequestLine_Headers) {
 }
 
 TEST(HTTPRequestParserTests, RequestLine_Headers_Body) {
-    std::string data = "GET / HTTP/1.1\r\nContent-Length: 11\r\n\r\nHello world";
-    HTTPRequest* request = HTTPRequestParser::parse(data);
+    auto data = std::make_shared<std::string>("GET / HTTP/1.1\r\nContent-Length: 11\r\n\r\nHello world");
+    std::shared_ptr<HTTPRequest> request = HTTPRequestParser::parse(data);
     ASSERT_EQ("GET", request->method);
     ASSERT_EQ("/", request->uri.to_string());
     ASSERT_EQ("HTTP/1.1", request->version);
     ASSERT_EQ("11", request->headers["Content-Length"]);
-    ASSERT_EQ("Hello world", request->body);
+    ASSERT_EQ("Hello world", *request->body);
 }

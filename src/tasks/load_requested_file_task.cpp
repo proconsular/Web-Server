@@ -17,7 +17,7 @@ void LoadRequestedFileTask::perform() {
     auto name = url_string.c_str();
     if (access(name, F_OK) == 0) {
         FILE* file = fopen(name, "rb");
-        auto* output = new std::string;
+        auto output = std::make_shared<std::string>();
         const int BUFFER_SIZE = 1024 * 4;
         size_t amount_read;
         do {

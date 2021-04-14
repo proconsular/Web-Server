@@ -9,6 +9,8 @@
 
 #include "http_request.h"
 #include "connection.h"
+#include <memory>
+#include "http_response.h"
 
 enum HTTPRequestStatus {
     NEW,
@@ -20,15 +22,25 @@ enum HTTPRequestStatus {
 
 class HTTPRequestCarrier {
 public:
-    explicit HTTPRequestCarrier(URL url, HTTPRequest* request): url(std::move(url)), http_request(request), status(NEW) {
+    explicit HTTPRequestCarrier(URL url, std::shared_ptr<HTTPRequest> request): url(std::move(url)), http_request(std::move(request)), status(NEW) {
         connection = nullptr;
+        _id = generate_hash_id(10);
+    }
+
+    [[nodiscard]] std::string id() const {
+        return _id;
     }
 
     HTTPRequestStatus status;
-    HTTPRequest* http_request;
-    Connection* connection;
+    std::shared_ptr<HTTPRequest> http_request;
+    std::shared_ptr<Connection> connection;
+
+    std::shared_ptr<HTTPResponse> http_response;
 
     URL url;
+
+private:
+    std::string _id;
 };
 
 

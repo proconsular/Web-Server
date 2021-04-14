@@ -47,7 +47,7 @@ int Socket::read(const std::shared_ptr<std::string>& output) const {
     return amount_read;
 }
 
-int Socket::write(std::string *input) {
+int Socket::write(const std::shared_ptr<std::string>& input) const {
     const int BUFFER_SIZE = 1024;
     const char *data = input->c_str();
 
@@ -64,7 +64,7 @@ int Socket::write(std::string *input) {
     return amount_written;
 }
 
-int Socket::get_error() {
+int Socket::get_error() const {
     int error_code;
     int error_code_size = sizeof(error_code);
     getsockopt(_id, SOL_SOCKET, SO_ERROR, &error_code, reinterpret_cast<socklen_t *>(&error_code_size));

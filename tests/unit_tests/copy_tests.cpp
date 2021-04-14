@@ -13,7 +13,7 @@ TEST(CopyTests, CR1) {
     auto* r2 = new ClientRequest(*r1);
 
     r2->type = Unsupported;
-    r2->data = new std::string("hello world");
+    r2->data = std::make_shared<std::string>("hello world");
     r2->uri = URL::parse("/hello.txt");
 
     ASSERT_FALSE(r1->type == r2->type);

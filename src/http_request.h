@@ -12,14 +12,14 @@
 
 class HTTPRequest {
 public:
-    std::string* generate() const;
+    [[nodiscard]] std::shared_ptr<std::string> generate() const;
 
     std::string method;
     std::string version;
     URL uri;
 
     std::map<std::string, std::string> headers;
-    std::string body;
+    std::shared_ptr<std::string> body;
 private:
 
 };

@@ -16,7 +16,7 @@ std::shared_ptr<HTTPRequest> HTTPRequestParser::parse(const std::shared_ptr<std:
 
     if (request->headers.find("Content-Length") != request->headers.end()) {
         int length = atoi(request->headers["Content-Length"].c_str());
-        request->body = std::string(cursor, cursor + length);
+        request->body = std::make_shared<std::string>(cursor, cursor + length);
     }
 
     return request;

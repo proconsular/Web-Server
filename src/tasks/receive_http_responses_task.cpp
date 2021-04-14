@@ -8,90 +8,120 @@
 #include <vector>
 #include <iterator>
 
+enum ReadMode {
+    STATUS,
+    HEADERS,
+    BODY,
+    CHUNKED,
+};
+
 void ReceiveHTTPResponsesTask::perform() {
-    for (auto carrier: _state->outbound_http_request_queue) {
+    for (const auto& pair: _state->outbound_http_request_queue) {
+        auto carrier = std::make_shared<HTTPRequestCarrier>(*pair.second);
         if (carrier->status == SENT) {
-            auto* response = new HTTPResponse;
+
+            const ssize_t buffer_size = 1024 * 4;
+
+            auto response = std::make_shared<HTTPResponse>();
+            auto data = std::make_shared<std::string>();
+            auto accum = std::make_shared<std::string>();
 
             int socket = carrier->connection->socket.id();
-            int buffer_size = 1024 * 10;
-            int amount_remaining = -1;
-            int amount_read = 0;
+
+            ssize_t amount = 0;
+            bool reading = true;
+
             int cursor = 0;
-            int last_size = -1;
+            int body_length = 0;
 
-            auto* accum = new std::string;
+            ReadMode mode = STATUS;
 
-            bool parsed_header = false;
-            bool chunked = false;
             do {
                 char* buffer = new char[buffer_size];
-                ssize_t amount = read(socket, buffer, buffer_size);
-                std::cout << "reading\n";
-                if (amount >= 0) {
-                    if (!parsed_header) {
-                        parsed_header = true;
-                        int header_end = HTTPResponse::parse_header(buffer, buffer + buffer_size, response);
-                        accum->append(std::string(buffer + header_end, buffer + amount));
-                        cursor = 0;
-                        if (response->headers.find("Content-Length") != response->headers.end()) {
-                            int length = atoi(response->headers["Content-Length"].c_str());
-                            if (header_end + length < buffer_size) {
-                                HTTPResponse::parse_body(buffer + header_end, response);
-                                break;
-                            } else {
-                                amount_remaining = (header_end + length) - buffer_size;
-                            }
-                        } else {
-                            chunked = true;
+
+                amount = read(socket, buffer, buffer_size);
+
+                if (amount == -1)
+                    break;
+
+                data->append(std::string(buffer, buffer + amount));
+
+                bool parsing = true;
+                while (cursor < data->size() && parsing) {
+                    switch (mode) {
+                        case STATUS: {
+                            cursor += HTTPResponse::parse_status_line(data->begin(), data->end(), response);
+                            mode = HEADERS;
+                            break;
                         }
-                    } else {
-                        if (!chunked) {
-                            amount_remaining -= amount;
-                            accum->append(std::string(buffer, buffer + amount));
-                            if (amount_remaining <= 0) {
-                                response->body = accum;
+                        case HEADERS: {
+                            int length = HTTPResponse::parse_header(data->begin() + cursor, data->end(), response);
+                            if (length == -1) {
+                                parsing = false;
                                 break;
                             }
-                        } else {
-                            accum->append(std::string(buffer, buffer + amount));
-
-                            int size = last_size;
-                            do {
-                                std::cout << cursor << std::endl;
-                                if (size == -1) {
-                                    int result = HTTPResponse::parse_chunk_header(*accum, cursor, size);
-                                    if (result <= -1)
-                                        break;
-                                    cursor = result;
-                                    last_size = -1;
+                            cursor += length;
+                            if (cursor < data->size()) {
+                                if (data->at(cursor) == '\r' || data->at(cursor) == '\n') {
+                                    if (response->headers.find("Content-Length") != response->headers.end()) {
+                                        body_length = atoi(response->headers["Content-Length"]->c_str());
+                                        mode = BODY;
+                                    } else if (response->headers.find("Transfer-Encoding") != response->headers.end()) {
+                                        mode = CHUNKED;
+                                    }
+                                    if (data->at(cursor) == '\r') {
+                                        cursor += 2;
+                                    } else {
+                                        cursor += 1;
+                                    }
                                 }
-                                if (size == 0 || size == -1)
-                                    break;
-                                if (cursor + size < accum->size()) {
-                                    cursor = HTTPResponse::parse_chunk(*accum, cursor, size, response);
-                                    size = -1;
-                                } else {
-                                    last_size = size;
-                                    break;
-                                }
-                            } while (cursor < accum->size());
-
+                            }
+                            break;
+                        }
+                        case CHUNKED: {
+                            int size;
+                            int length = HTTPResponse::parse_chunk_header(data, cursor, size);
+                            if (length == -1) {
+                                parsing = false;
+                                break;
+                            }
                             if (size == 0) {
+                                parsing = false;
+                                reading = false;
                                 break;
                             }
+                            if (cursor + length + size >= data->size()) {
+                                parsing = false;
+                                break;
+                            }
+                            cursor += length;
+                            accum->append(std::string(data->begin() + cursor, data->begin() + cursor + size));
+                            cursor += size + 2;
+                            break;
                         }
+                        default:
+                            parsing = false;
+                            break;
                     }
-                    delete[] buffer;
-                } else {
+                }
+
+                if (mode == BODY && cursor + body_length == data->size()) {
+                    response->body = std::make_shared<std::string>(data->begin() + cursor, data->begin() + cursor + body_length);
                     break;
                 }
-            } while(true);
-            std::cout << *response->body << std::endl;
-            FILE* file = fopen("test.html", "w");
-            fwrite(response->body->c_str(), sizeof(char), response->body->size(), file);
-            fclose(file);
+
+                delete[] buffer;
+            } while (amount > 0 && reading);
+
+            if (!accum->empty()) {
+                response->body = accum;
+            }
+
             carrier->status = FULFILLED;
+
+            carrier->http_response = response;
+//            _controller->apply(Action(ReportLog, response->generate()));
+            _controller->apply(Action(ReceiveHttpResponse, carrier));
         }
     }
 }

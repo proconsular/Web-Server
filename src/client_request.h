@@ -44,7 +44,7 @@ public:
 
     URL uri;
     URL path;
-    std::string* data;
+    std::shared_ptr<std::string> data;
 
     std::shared_ptr<Connection> connection;
 

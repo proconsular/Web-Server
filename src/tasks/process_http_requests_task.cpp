@@ -5,7 +5,7 @@
 #include "process_http_requests_task.h"
 
 void ProcessHTTPRequestsTask::perform() {
-    for (auto envelope: state->inbound_http_request_queue) {
+    for (const auto& envelope: state->inbound_http_request_queue) {
         auto request = envelope.request;
         auto client_request = std::make_shared<ClientRequest>();
         client_request->connection = envelope.connection;
@@ -15,5 +15,5 @@ void ProcessHTTPRequestsTask::perform() {
         }
         _controller->apply(Action(CreateClientRequest, client_request));
     }
-    state->inbound_http_request_queue.clear();
+    _controller->apply(Action(ClearHttpRequests));
 }

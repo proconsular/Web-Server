@@ -9,16 +9,21 @@
 #include "http_request_envelope.h"
 #include "http_response_envelope.h"
 #include "client_request.h"
+#include "http_request_carrier.h"
 
 #include <iostream>
 
 LogActionReceiver::LogActionReceiver(std::string filename): _filename(std::move(filename)) {
-    _file = fopen("log.txt", "wb");
+    _file = fopen("log.txt", "a");
 }
 
 void LogActionReceiver::receive(const Action &action) {
     std::string output;
     switch (action.type) {
+        case StartProgram: {
+            output.append("******** PROGRAM INITIALIZED ********");
+            break;
+        }
         case SetConfiguration: {
             auto config = std::static_pointer_cast<Configuration>(action.data);
             output.append(string_format("LOADED: config: %s; path: %s, port: %i", config->from_file.c_str(), config->base_url.to_string().c_str(), config->port));
@@ -76,6 +81,48 @@ void LogActionReceiver::receive(const Action &action) {
         case CreateHttpResponse: {
             auto response = std::static_pointer_cast<HTTPResponseEnvelope>(action.data);
             output.append(string_format("RESPONSE: %i %s %s to %s", response->response->code, response->response->status.c_str(), response->response->version.c_str(), response->connection->id().c_str()));
+            break;
+        }
+        case CreateOutboundHttpRequest: {
+            auto carrier = std::static_pointer_cast<HTTPRequestCarrier>(action.data);
+            output.append(string_format("QUEUED OUTBOUND: REQUEST: (%s) %s %s %s to %s", carrier->id().c_str(), carrier->http_request->method.c_str(), carrier->http_request->uri.to_string().c_str(), carrier->http_request->version.c_str(), carrier->url.domain_to_cstr()));
+            break;
+        }
+        case InitializeHttpRequestConnection: {
+            auto carrier = std::static_pointer_cast<HTTPRequestCarrier>(action.data);
+            if (carrier->status == CONNECTED) {
+                output.append(string_format("ESTABLISHED: CONNECTION with %s", carrier->url.domain_to_cstr()));
+            } else {
+                output.append(string_format("FAILED: CONNECTION with %s", carrier->url.domain_to_cstr()));
+            }
+            break;
+        }
+        case SendHttpRequest: {
+            auto carrier = std::static_pointer_cast<HTTPRequestCarrier>(action.data);
+            output.append(string_format("SENT: REQUEST: %s", carrier->id().c_str()));
+            break;
+        }
+        case ReceiveHttpResponse: {
+            auto carrier = std::static_pointer_cast<HTTPRequestCarrier>(action.data);
+            if (carrier->status == FULFILLED) {
+                output.append(string_format("RECEIVED: RESPONSE: %s, %i %s", carrier->id().c_str(), carrier->http_response->code, carrier->http_response->status.c_str()));
+            } else {
+                if (carrier->http_response != nullptr) {
+                    output.append(string_format("FAILED: RESPONSE: %s, %i %s", carrier->id().c_str(), carrier->http_response->code, carrier->http_response->status.c_str()));
+                } else {
+                    output.append(string_format("FAILED: RESPONSE: %s", carrier->id().c_str()));
+                }
+            }
+            break;
+        }
+        case ReportError: {
+            auto error = std::static_pointer_cast<std::string>(action.data);
+            output.append(string_format("ERROR: %s", error->c_str()));
+            break;
+        }
+        case ReportLog: {
+            auto error = std::static_pointer_cast<std::string>(action.data);
+            output.append(string_format("LOG: \n%s", error->c_str()));
             break;
         }
         default:

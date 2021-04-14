@@ -25,8 +25,8 @@ public:
     std::map<std::string, std::shared_ptr<Connection>> connections;
     std::map<std::string, std::shared_ptr<ClientRequest>> requests;
 
-    std::vector<HTTPRequestCarrier*> outbound_http_request_queue;
-    std::vector<HTTPResponseEnvelope> inbound_http_response_queue;
+    std::map<std::string, std::shared_ptr<HTTPRequestCarrier>> outbound_http_request_queue;
+//    std::vector<HTTPResponseEnvelope> inbound_http_response_queue;
 
     std::vector<HTTPRequestEnvelope> inbound_http_request_queue;
     std::vector<HTTPResponseEnvelope> outbound_http_response_queue;

@@ -20,10 +20,10 @@ public:
     int bind();
     int listen(int);
 
-    int get_error();
+    int get_error() const;
 
-    int read(std::string*);
-    int write(std::string*);
+    int read(const std::shared_ptr<std::string>&) const;
+    int write(const std::shared_ptr<std::string>&) const;
 
     bool accept(Socket&);
 

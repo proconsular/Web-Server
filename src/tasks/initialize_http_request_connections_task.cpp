@@ -9,14 +9,17 @@
 #include <netdb.h>
 
 void InitializeHTTPRequestConnectionsTask::perform() {
-    for (auto carrier: _state->outbound_http_request_queue) {
+    for (const auto& pair: _state->outbound_http_request_queue) {
+        auto carrier = pair.second;
         if (carrier->status == NEW) {
+            auto _carrier = std::make_shared<HTTPRequestCarrier>(*carrier);
+
             sockaddr_in server_address{};
 
             server_address.sin_family = AF_INET;
             server_address.sin_port = htons(80);
 
-            struct addrinfo hints, *res, *res0;
+            struct addrinfo hints{}, *res, *res0;
             memset(&hints, 0, sizeof hints);
             hints.ai_family = PF_UNSPEC;
             hints.ai_socktype = SOCK_STREAM;
@@ -27,6 +30,7 @@ void InitializeHTTPRequestConnectionsTask::perform() {
 
             if (error) {
                 carrier->status = FAILED;
+                _controller->apply(Action(InitializeHttpRequestConnection, _carrier));
                 continue;
             }
 
@@ -44,15 +48,17 @@ void InitializeHTTPRequestConnectionsTask::perform() {
                 break;
             }
             if (socket_id < 0) {
-                carrier->status = FAILED;
+                _carrier->status = FAILED;
             }
             freeaddrinfo(res0);
 
             if (socket_id >= 0) {
-                auto connection = new Connection(Socket(socket_id));
-                carrier->connection = connection;
-                carrier->status = CONNECTED;
+                auto connection = std::make_shared<Connection>(Socket(socket_id));
+                _carrier->connection = connection;
+                _carrier->status = CONNECTED;
             }
+
+            _controller->apply(Action(InitializeHttpRequestConnection, _carrier));
         }
     }
 }

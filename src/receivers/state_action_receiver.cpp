@@ -50,10 +50,23 @@ void StateActionReceiver::receive(const Action &action) {
             break;
         }
         case ClearHttpResponses: {
-            for (auto response: _state->outbound_http_response_queue) {
+            for (const auto& response: _state->outbound_http_response_queue) {
                 response.connection->active_requests--;
             }
             _state->outbound_http_response_queue.clear();
+            break;
+        }
+        case ClearHttpRequests: {
+            _state->inbound_http_request_queue.clear();
+            break;
+        }
+        case CreateOutboundHttpRequest:
+        case InitializeHttpRequestConnection:
+        case SendHttpRequest:
+        case ReceiveHttpResponse:
+        case ModifyHttpCarrier: {
+            auto carrier = std::static_pointer_cast<HTTPRequestCarrier>(action.data);
+            _state->outbound_http_request_queue[carrier->id()] = carrier;
             break;
         }
         default:

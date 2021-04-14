@@ -9,10 +9,11 @@
 
 #include <utility>
 #include "state.h"
+#include "controllers/controller.h"
 
 class ReceiveHTTPResponsesTask: public Task {
 public:
-    explicit ReceiveHTTPResponsesTask(std::shared_ptr<State> state): _state(std::move(state)), _alive(true) {}
+    explicit ReceiveHTTPResponsesTask(std::shared_ptr<State> state, std::shared_ptr<Controller> controller): _state(std::move(state)), _controller(std::move(controller)), _alive(true) {}
 
     void perform() override;
     bool alive() override {
@@ -20,6 +21,7 @@ public:
     }
 private:
     std::shared_ptr<State> _state;
+    std::shared_ptr<Controller> _controller;
     bool  _alive;
 };
 

@@ -47,7 +47,7 @@ TEST(HTTPRequestGenerationTests, Body) {
     request.uri = URL::parse("/");
     request.method = "GET";
     request.headers["Content-Type"] = "text/plain";
-    request.body = "Hello world";
+    request.body = std::make_shared<std::string>("Hello world");
     ASSERT_EQ("GET / HTTP/1.1\r\nContent-Type: text/plain\r\nContent-Length: 11\r\n\r\nHello world", *request.generate());
 }
 
@@ -59,6 +59,6 @@ TEST(HTTPRequestGenerationTests, TwoHeaders_Body) {
     request.method = "GET";
     request.headers["Content-Type"] = "text/plain";
     request.headers["Content-Encoding"] = "hello";
-    request.body = "Hello world";
+    request.body = std::make_shared<std::string>("Hello world");
     ASSERT_EQ("GET / HTTP/1.1\r\nContent-Encoding: hello\r\nContent-Type: text/plain\r\nContent-Length: 11\r\n\r\nHello world", *request.generate());
 }

@@ -20,7 +20,7 @@ public:
     }
 
     bool read(const std::shared_ptr<std::string>&);
-    bool write(std::string*);
+    bool write(const std::shared_ptr<std::string>&);
 
     void terminate() {
         alive = false;

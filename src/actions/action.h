@@ -11,7 +11,11 @@
 
 enum Actions {
     None,
+
+    StartProgram,
+
     CreateHttpRequest,
+    ClearHttpRequests,
     CreateClientConnection,
     ModifyClientConnection,
     RemoveClientConnection,
@@ -22,6 +26,15 @@ enum Actions {
     RemoveClientRequest,
     CreateHttpResponse,
     ClearHttpResponses,
+
+    CreateOutboundHttpRequest,
+    InitializeHttpRequestConnection,
+    SendHttpRequest,
+    ModifyHttpCarrier,
+    ReceiveHttpResponse,
+
+    ReportError,
+    ReportLog,
 };
 
 class Action {
