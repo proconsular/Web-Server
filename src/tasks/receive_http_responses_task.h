@@ -23,6 +23,8 @@ private:
     std::shared_ptr<State> _state;
     std::shared_ptr<Controller> _controller;
     bool  _alive;
+
+    std::shared_ptr<HTTPResponse> parse(const std::shared_ptr<HTTPRequestCarrier> &carrier) const;
 };
 
 

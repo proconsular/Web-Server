@@ -38,7 +38,7 @@ int main() {
 
     controller->apply(Action(StartProgram));
 
-    auto url = URL::parse("http://voxday.blogspot.com/");
+    auto url = URL::parse("http://duckduckgo.com/");
 
     auto request = std::make_shared<HTTPRequest>();
     request->method = "GET";

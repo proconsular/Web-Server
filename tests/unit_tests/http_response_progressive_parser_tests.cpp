@@ -4,6 +4,7 @@
 
 #include "gtest/gtest.h"
 #include "http_response.h"
+#include "http_response_parser.h"
 #include "utils.h"
 
 TEST(HTTP_Response_Progressive_Parser, ParseHeader1) {
@@ -235,4 +236,47 @@ TEST(HTTP_Response_Progressive_Parser, ParseHeaders4) {
     ASSERT_EQ(200, response->code);
     ASSERT_EQ("keep-alive", *response->headers["Connection"]);
     ASSERT_EQ(-1, header_end2);
+}
+
+TEST(HTTP_Response_Progressive_Parser, ParseResponse) {
+    HttpResponseParser parser;
+
+    auto response = parser.get_response();
+
+    const char* buffer1 = "HTTP/1.1 200 OK\r\n";
+    ASSERT_TRUE(parser.partial_parse(buffer1, strlen(buffer1)));
+
+    ASSERT_EQ(200, response->code);
+    ASSERT_EQ("OK", response->status);
+    ASSERT_EQ("HTTP/1.1", response->version);
+
+    const char* buffer2 = "Content-Type: ";
+    ASSERT_TRUE(parser.partial_parse(buffer2, strlen(buffer2)));
+
+    ASSERT_EQ(response->headers.end(), response->headers.find("Content-Type"));
+
+    const char* buffer3 = "text/plain";
+    ASSERT_TRUE(parser.partial_parse(buffer3, strlen(buffer3)));
+
+    ASSERT_EQ(nullptr, response->headers["Content-Type"]);
+
+    const char* buffer4 = "\r\n";
+    ASSERT_TRUE(parser.partial_parse(buffer4, strlen(buffer4)));
+
+    ASSERT_EQ("text/plain", *response->headers["Content-Type"]);
+
+    const char* buffer5 = "Content-Length: 11\r\n\r\n";
+    ASSERT_TRUE(parser.partial_parse(buffer5, strlen(buffer5)));
+
+    ASSERT_EQ("11", *response->headers["Content-Length"]);
+
+    const char* buffer6 = "Hello";
+    ASSERT_TRUE(parser.partial_parse(buffer6, strlen(buffer6)));
+
+    ASSERT_EQ(nullptr, response->body);
+
+    const char* buffer7 = " world";
+    ASSERT_FALSE(parser.partial_parse(buffer7, strlen(buffer7)));
+
+    ASSERT_EQ("Hello world", *response->body);
 }
