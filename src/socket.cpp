@@ -4,6 +4,7 @@
 
 
 #include "socket.h"
+#include "constants.h"
 #include <iostream>
 #include <algorithm>
 #include <math.h>
@@ -35,7 +36,7 @@ bool Socket::accept(Socket& socket) {
 }
 
 int Socket::read(const std::shared_ptr<std::string>& output) const {
-    const int BUFFER_SIZE = 1024;
+    const int BUFFER_SIZE = 4 * KB;
 
     int amount_read = 0;
     do {

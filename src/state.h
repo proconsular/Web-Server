@@ -19,6 +19,7 @@ class State {
 public:
     State() {
         scheduler = std::make_shared<TaskScheduler>();
+        config = std::make_shared<Configuration>();
     }
 
     Socket server_socket;

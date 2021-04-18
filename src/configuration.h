@@ -15,11 +15,14 @@ public:
         keep_alive = 30;
         port_fixed = false;
         base_url = URL::parse("/");
+        http_response_read_wait_ms = 5000;
     }
 
     URL base_url;
     int port;
     int keep_alive;
+
+    uint32_t http_response_read_wait_ms;
 
     bool port_fixed;
 

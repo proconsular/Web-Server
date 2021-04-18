@@ -14,7 +14,7 @@
 #include <iostream>
 
 LogActionReceiver::LogActionReceiver(std::string filename): _filename(std::move(filename)) {
-    _file = fopen("log.txt", "a");
+    _file = fopen(_filename.c_str(), "a");
 }
 
 void LogActionReceiver::receive(const Action &action) {
@@ -22,6 +22,11 @@ void LogActionReceiver::receive(const Action &action) {
     switch (action.type) {
         case StartProgram: {
             output.append("******** PROGRAM INITIALIZED ********");
+            break;
+        }
+        case StartApp: {
+            auto app = std::static_pointer_cast<std::string>(action.data);
+            output.append(string_format("*********** APPLICATION: %s ***********", app->c_str()));
             break;
         }
         case SetConfiguration: {
@@ -37,11 +42,12 @@ void LogActionReceiver::receive(const Action &action) {
         case CreateHttpRequest: {
             auto envelope = std::static_pointer_cast<HTTPRequestEnvelope>(action.data);
             output.append(
-                    string_format("REQUEST: %s %s %s",
+                    string_format("REQUEST: %s %s %s from %s",
                                   envelope->request->method.c_str(),
                                   envelope->request->uri.to_string().c_str(),
-                                  envelope->request->version.c_str())
-                                  );
+                                  envelope->request->version.c_str(),
+                                  envelope->connection->id().c_str()
+                                  ));
             break;
         }
         case CreateClientConnection: {
@@ -60,7 +66,7 @@ void LogActionReceiver::receive(const Action &action) {
                     {Unsupported, "Unsupported"},
                     {RetrieveFile, "Retrieve File"}
             };
-            output.append(string_format("CREATED: request: %s: %s", request->id().c_str(), table[request->type].c_str()));
+            output.append(string_format("CREATED: request: %s for %s: %s", request->id().c_str(), request->connection->id().c_str(), table[request->type].c_str()));
             break;
         }
         case ModifyClientRequest: {
@@ -75,7 +81,7 @@ void LogActionReceiver::receive(const Action &action) {
                     {Complete, "Complete"},
                     {Failed, "Failed"},
             };
-            output.append(string_format("UPDATED: request: %s: %s, %s", request->id().c_str(), table[request->type].c_str(), status[request->status].c_str()));
+            output.append(string_format("UPDATED: request: %s for %s: %s, %s", request->id().c_str(), request->connection->id().c_str(), table[request->type].c_str(), status[request->status].c_str()));
             break;
         }
         case CreateHttpResponse: {
@@ -91,9 +97,9 @@ void LogActionReceiver::receive(const Action &action) {
         case InitializeHttpRequestConnection: {
             auto carrier = std::static_pointer_cast<HTTPRequestCarrier>(action.data);
             if (carrier->status == CONNECTED) {
-                output.append(string_format("ESTABLISHED: CONNECTION with %s", carrier->url.domain_to_cstr()));
+                output.append(string_format("ESTABLISHED: with %s", carrier->url.to_string().c_str()));
             } else {
-                output.append(string_format("FAILED: CONNECTION with %s", carrier->url.domain_to_cstr()));
+                output.append(string_format("FAILED: with %s", carrier->url.to_string().c_str()));
             }
             break;
         }
@@ -139,4 +145,5 @@ void LogActionReceiver::receive(const Action &action) {
     fwrite(output.c_str(), sizeof(char), output.size(), _file);
     fflush(_file);
     fwrite(output.c_str(), sizeof(char), output.size(), stdout);
+    fflush(stdout);
 }

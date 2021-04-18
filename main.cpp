@@ -15,13 +15,19 @@
 #include "tasks/send_http_requests_task.h"
 
 #include "controllers/direct_controller.h"
+#include "receivers/log_action_receiver.h"
 
 #include "state.h"
 #include "utils.h"
 
+#include "json.hpp"
+
 int main() {
     auto state = std::make_shared<State>();
     auto controller = std::make_shared<DirectController>(state);
+    controller->add_receiver(std::make_shared<LogActionReceiver>("log.txt"));
+
+    controller->apply(Action(StartApp, std::make_shared<std::string>("Http Server")));
 
     state->scheduler->add(std::make_shared<LoadConfigurationTask>(controller));
     state->scheduler->add(std::make_shared<InitializeServerTask>(state, controller));
@@ -35,19 +41,6 @@ int main() {
     state->scheduler->add(std::make_shared<InitializeHTTPRequestConnectionsTask>(state, controller));
     state->scheduler->add(std::make_shared<SendHTTPRequestsTask>(state, controller));
     state->scheduler->add(std::make_shared<ReceiveHTTPResponsesTask>(state, controller));
-
-    controller->apply(Action(StartProgram));
-
-    auto url = URL::parse("http://duckduckgo.com/");
-
-    auto request = std::make_shared<HTTPRequest>();
-    request->method = "GET";
-    request->version = "HTTP/1.1";
-    request->uri = URL::parse("/");
-    request->headers["Content-Length"] = "0";
-    request->headers["Host"] = url.domain_to_cstr();
-
-    controller->apply(Action(CreateOutboundHttpRequest, std::make_shared<HTTPRequestCarrier>(url, request)));
 
     state->scheduler->run();
 

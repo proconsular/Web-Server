@@ -9,12 +9,11 @@
 #include "receivers/log_action_receiver.h"
 
 DirectController::DirectController(std::shared_ptr<State> state): Controller(state) {
-    _receivers.push_back(new StateActionReceiver(state));
-    _receivers.push_back(new LogActionReceiver("log.txt"));
+    _receivers.push_back(std::make_shared<StateActionReceiver>(state));
 }
 
 void DirectController::apply(const Action& action) {
-    for (auto receiver: _receivers) {
+    for (const auto& receiver: _receivers) {
         receiver->receive(action);
     }
 }

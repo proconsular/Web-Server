@@ -8,11 +8,13 @@
 #include <chrono>
 #include "socket.h"
 #include "utils.h"
+#include <fcntl.h>
 
 class Connection {
 public:
     explicit Connection(Socket socket) {
         this->socket = socket;
+        fcntl(socket.id(), F_SETFL, O_NONBLOCK);
         alive = true;
         last_read = std::chrono::high_resolution_clock::now();
         active_requests = 0;

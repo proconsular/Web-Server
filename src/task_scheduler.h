@@ -9,13 +9,23 @@
 
 #include "tasks/task.h"
 
+#include <memory>
+
 class TaskScheduler {
 public:
+    TaskScheduler(): alive(true) {}
+
     void run();
 
     void add(const std::shared_ptr<Task>&);
+
+    void terminate() {
+        alive = false;
+    }
 private:
     std::vector<std::shared_ptr<Task>> tasks;
+
+    bool alive;
 };
 
 

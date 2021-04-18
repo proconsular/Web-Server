@@ -13,8 +13,12 @@ public:
     explicit DirectController(std::shared_ptr<State> state);
 
     void apply(const Action&) override;
+
+    void add_receiver(const std::shared_ptr<Receiver>& receiver) {
+        _receivers.push_back(receiver);
+    }
 private:
-    std::vector<Receiver*> _receivers;
+    std::vector<std::shared_ptr<Receiver>> _receivers;
 };
 
 

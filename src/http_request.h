@@ -7,11 +7,17 @@
 
 #include <string>
 #include <map>
+#include <utility>
+#include <memory>
 
 #include "url.h"
 
 class HTTPRequest {
 public:
+    explicit HTTPRequest() = default;
+
+    HTTPRequest(std::string method, const std::string& url): method(std::move(method)), uri(URL::parse(url)), version("HTTP/1.1") {}
+
     [[nodiscard]] std::shared_ptr<std::string> generate() const;
 
     std::string method;

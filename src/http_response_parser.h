@@ -6,6 +6,7 @@
 #define P8_WEB_SERVER_HTTP_RESPONSE_PARSER_H
 
 #include "http_response.h"
+#include <memory>
 
 enum ReadMode {
     STATUS,
@@ -25,6 +26,12 @@ public:
     bool partial_parse(const char* buffer, ssize_t amount);
     [[nodiscard]] std::shared_ptr<HTTPResponse> get_response() const {
         return response;
+    }
+
+    void finalize() {
+        if (mode == CHUNKED) {
+            response->body = built_up_body;
+        }
     }
 
 private:

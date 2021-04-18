@@ -10,6 +10,9 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <string>
+#include <memory>
+#include <stdio.h>
+#include <string.h>
 
 class Socket {
 public:
@@ -36,9 +39,10 @@ public:
     int port() const {
         return _port;
     }
+
+    struct sockaddr_in _address;
 private:
     int _id, _port;
-    struct sockaddr_in _address;
 };
 
 #endif //P8_WEB_SERVER_SOCKET_H

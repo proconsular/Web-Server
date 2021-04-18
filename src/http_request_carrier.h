@@ -17,7 +17,8 @@ enum HTTPRequestStatus {
     CONNECTED,
     SENT,
     FULFILLED,
-    FAILED
+    FAILED,
+    EXHAUSTED,
 };
 
 class HTTPRequestCarrier {
@@ -25,6 +26,7 @@ public:
     explicit HTTPRequestCarrier(URL url, std::shared_ptr<HTTPRequest> request): url(std::move(url)), http_request(std::move(request)), status(NEW) {
         connection = nullptr;
         _id = generate_hash_id(10);
+        has_been_read = false;
     }
 
     [[nodiscard]] std::string id() const {
@@ -36,6 +38,9 @@ public:
     std::shared_ptr<Connection> connection;
 
     std::shared_ptr<HTTPResponse> http_response;
+
+    std::chrono::high_resolution_clock::time_point initial_read_time;
+    bool has_been_read;
 
     URL url;
 

@@ -159,3 +159,21 @@ TEST(URLTests, combine3) {
     auto url = URL::append(URL::parse("/src"), URL::parse("resource/index.html"));
     ASSERT_EQ("/src/resource/index.html", url.to_string());
 }
+
+TEST(URLTests, unix) {
+    auto url = URL::parse("unix:///var/run/docker.sock");
+    ASSERT_EQ("unix", url.protocol);
+    ASSERT_EQ("unix:///var/run/docker.sock", url.to_string());
+}
+
+TEST(URLTests, port) {
+    auto url = URL::parse("http://localhost:8000");
+    ASSERT_EQ("http", url.protocol);
+    ASSERT_EQ("localhost", std::string(url.domain_to_cstr()));
+    ASSERT_EQ(8000, url.port);
+}
+
+TEST(URLTests, port_to) {
+    auto url = URL::parse("http://localhost:8000");
+    ASSERT_EQ("http://localhost:8000/", url.to_string());
+}

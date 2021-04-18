@@ -12,12 +12,14 @@
 #include <string>
 #include <vector>
 #include <fcntl.h>
+#include <memory>
+#include "utils.h"
 
 void InitializeServerTask::perform() {
     auto sock = std::make_shared<Socket>();
     int port = _state->config->port;
 
-    while (!_state->config->port_fixed) {
+    while (true) {
         if (sock->init() == 0) {
             perror("Socket failed");
             exit(EXIT_FAILURE);
@@ -28,8 +30,11 @@ void InitializeServerTask::perform() {
         sock->setup(port);
 
         if (sock->bind() < 0) {
-            port++;
-            continue;
+            _controller->apply(Action(ReportError, std::make_shared<std::string>(string_format("Socket failed to bind: %i", port))));
+            if (!_state->config->port_fixed) {
+                port++;
+                continue;
+            }
         }
 
         break;

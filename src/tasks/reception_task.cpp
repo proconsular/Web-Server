@@ -3,6 +3,8 @@
 //
 
 #include "reception_task.h"
+
+#include <arpa/inet.h>
 #include <iostream>
 
 void ReceptionTask::perform() {

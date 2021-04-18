@@ -29,7 +29,7 @@ bool HttpResponseParser::partial_parse(const char *buffer, ssize_t amount) {
     }
 
     if (mode == BODY && cursor + body_length == built_up_message->size()) {
-        response->body = std::__1::make_shared<std::string>(built_up_message->begin() + cursor, built_up_message->begin() + cursor + body_length);
+        response->body = std::make_shared<std::string>(built_up_message->begin() + cursor, built_up_message->begin() + cursor + body_length);
         return false;
     }
 
@@ -44,9 +44,9 @@ bool HttpResponseParser::parse_headers() {
     cursor += length;
     if (cursor < built_up_message->size()) {
         if (built_up_message->at(cursor) == '\r' || built_up_message->at(cursor) == '\n') {
+            mode = BODY;
             if (response->headers.find("Content-Length") != response->headers.end()) {
                 body_length = atoi(response->headers["Content-Length"]->c_str());
-                mode = BODY;
             } else if (response->headers.find("Transfer-Encoding") != response->headers.end()) {
                 mode = CHUNKED;
             }

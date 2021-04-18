@@ -41,6 +41,13 @@ void FinalizeClientRequestsTask::perform() {
                 _controller->apply(Action(CreateHttpResponse, std::make_shared<HTTPResponseEnvelope>(request->connection, response)));
                 break;
             }
+            case New: {
+                if (request->type == Unsupported) {
+                    auto response = std::make_shared<HTTPResponse>(501, "Not Implemented", "HTTP/1.1");
+                    _controller->apply(Action(CreateHttpResponse, std::make_shared<HTTPResponseEnvelope>(request->connection, response)));
+                }
+                break;
+            }
             default:
                 break;
         }
@@ -48,7 +55,7 @@ void FinalizeClientRequestsTask::perform() {
     for (auto iter = state->requests.cbegin(), next_iter = iter; iter != state->requests.cend(); iter = next_iter) {
         auto request = iter->second;
         next_iter++;
-        if (request->status == Complete || request->status == Failed) {
+        if (request->status == Complete || request->status == Failed || (request->status == New && request->type == Unsupported)) {
             _controller->apply(Action(RemoveClientRequest, request));
         }
     }

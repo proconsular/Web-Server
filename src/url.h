@@ -36,6 +36,9 @@ public:
     std::string extension;
 
     bool is_root;
+    bool is_filepath;
+
+    int port;
 };
 
 

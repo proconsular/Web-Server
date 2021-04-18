@@ -5,6 +5,7 @@
 #include "url.h"
 #include "utils.h"
 #include <algorithm>
+#include <string.h>
 
 URL URL::parse(const std::string &str) {
     auto url = URL();
@@ -17,6 +18,19 @@ URL URL::parse(const std::string &str) {
         url.is_root = true;
         return url;
     }
+
+    int slash_count = 0;
+    for (char iter : str) {
+        if (iter == '/')
+            slash_count++;
+        else
+            slash_count = 0;
+        if (slash_count == 3) {
+            break;
+        }
+    }
+    if (slash_count == 3)
+        url.is_filepath = true;
 
     url.is_root = str[0] == '/';
 
@@ -36,12 +50,15 @@ URL URL::parse(const std::string &str) {
 
     if (!url.components.empty() && !url.protocol.empty()) {
         auto first = url.components[0];
-        if (first.find('.') != std::string::npos) {
-            auto comps = split_string(".", first);
-            std::reverse(comps.begin(), comps.end());
-            url.domain = comps;
-            url.components.erase(url.components.begin());
+        auto comps = split_string(".", first);
+        auto f = split_string(":", comps.back());
+        if (f.size() > 1) {
+            url.port = atoi(f[1].c_str());
         }
+        comps[comps.size() - 1] = f[0];
+        std::reverse(comps.begin(), comps.end());
+        url.domain = comps;
+        url.components.erase(url.components.begin());
     }
 
     if (!url.components.empty()) {
@@ -84,6 +101,8 @@ std::string URL::to_string() const {
 
     if (!protocol.empty()) {
         output += protocol + "://";
+        if (is_filepath)
+            output += "/";
     }
 
     if (!domain.empty()) {
@@ -91,7 +110,11 @@ std::string URL::to_string() const {
         for (auto iter = domain.rbegin(); iter != domain.rend(); iter++) {
             dp.push_back(*iter);
         }
-        output += join(".", dp) + "/";
+        output += join(".", dp);
+        if (port != 0) {
+            output += ":" + std::to_string(port);
+        }
+        output += "/";
     }
 
     if (!components.empty()) {

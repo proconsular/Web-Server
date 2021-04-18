@@ -13,6 +13,7 @@ enum Actions {
     None,
 
     StartProgram,
+    StartApp,
 
     CreateHttpRequest,
     ClearHttpRequests,

@@ -74,3 +74,15 @@ std::string generate_hash_id(int length) {
 
     return output;
 }
+
+std::chrono::high_resolution_clock::time_point get_time() {
+    return std::chrono::high_resolution_clock::now();
+}
+
+uint32_t get_millisecond_duration(std::chrono::high_resolution_clock::time_point a, std::chrono::high_resolution_clock::time_point b) {
+    return std::chrono::duration_cast<std::chrono::milliseconds>(a - b).count();
+}
+
+uint32_t get_ms_to_now(std::chrono::high_resolution_clock::time_point t) {
+    return get_millisecond_duration(get_time(), t);
+}

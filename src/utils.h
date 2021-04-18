@@ -10,7 +10,7 @@
 #include <memory>
 #include <string>
 #include <stdexcept>
-
+#include <chrono>
 
 std::vector<std::string> split_string(const std::string& separator, const std::string& str);
 std::string join(const std::string& separator, const std::vector<std::string>& arr);
@@ -27,5 +27,11 @@ std::string string_format( const std::string& format, Args ... args )
 }
 
 std::string generate_hash_id(int);
+
+std::chrono::high_resolution_clock::time_point get_time();
+
+uint32_t get_millisecond_duration(std::chrono::high_resolution_clock::time_point a, std::chrono::high_resolution_clock::time_point b);
+
+uint32_t get_ms_to_now(std::chrono::high_resolution_clock::time_point t);
 
 #endif //P8_WEB_SERVER_UTILS_H

@@ -1,0 +1,6 @@
+{
+  "base_url": "web/",
+  "port": 8001,
+  "keep-alive": 60,
+  "port_fixed": true
+}
