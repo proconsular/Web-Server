@@ -25,7 +25,7 @@ void InitializeServerTask::perform() {
             exit(EXIT_FAILURE);
         }
 
-        fcntl(sock->id(), F_SETFL, O_NONBLOCK);
+        fcntl(sock->id, F_SETFL, O_NONBLOCK);
 
         sock->setup(port);
 

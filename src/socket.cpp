@@ -10,38 +10,40 @@
 #include <math.h>
 
 int Socket::init() {
-    return _id = socket(AF_INET, SOCK_STREAM, 0);
+    return id = socket(AF_INET, SOCK_STREAM, 0);
 }
 
 void Socket::setup(int port) {
-    _address.sin_family = AF_INET;
-    _address.sin_addr.s_addr = INADDR_ANY;
-    _address.sin_port = htons(port);
+    ip_address.sin_family = AF_INET;
+    ip_address.sin_addr.s_addr = INADDR_ANY;
+    ip_address.sin_port = htons(port);
     _port = port;
 }
 
 int Socket::bind() {
-    return ::bind(_id, (struct sockaddr*) &_address, sizeof (_address));
+    return ::bind(id, (struct sockaddr*) &ip_address, sizeof (ip_address));
 }
 
 int Socket::listen(int amount) {
-    return ::listen(_id, amount);
+    return ::listen(id, amount);
 }
 
 bool Socket::accept(Socket& socket) {
-    int addrlen = sizeof _address;
-    int id = ::accept(_id, (struct sockaddr*) &_address, (socklen_t*) &addrlen);
-    socket = Socket(id);
-    return id >= 0;
+    sockaddr_in client_addr{};
+    socklen_t addrlen = sizeof(sockaddr_in);
+    int client_id = ::accept(id, (struct sockaddr*) &client_addr, (socklen_t*) &addrlen);
+    socket = Socket(client_id);
+    socket.ip_address = client_addr;
+    return client_id >= 0;
 }
 
 int Socket::read(const std::shared_ptr<std::string>& output) const {
-    const int BUFFER_SIZE = 4 * KB;
+    const int BUFFER_SIZE = 50 * KB;
 
     int amount_read = 0;
     do {
         char buffer[BUFFER_SIZE] = {0};
-        amount_read = ::read(_id, buffer, BUFFER_SIZE);
+        amount_read = ::read(id, buffer, BUFFER_SIZE);
         output->append(buffer);
     } while (amount_read == BUFFER_SIZE);
 
@@ -49,16 +51,18 @@ int Socket::read(const std::shared_ptr<std::string>& output) const {
 }
 
 int Socket::write(const std::shared_ptr<std::string>& input) const {
-    const int BUFFER_SIZE = 1024;
+    const int BUFFER_SIZE = 50 * KB;
     const char *data = input->c_str();
 
-    int amount_written = 0;
-    int cursor = 0;
+    ssize_t amount_written;
+    ssize_t cursor = 0;
     do {
         char buffer[BUFFER_SIZE] = {0};
-        int size = fmin(input->size() - cursor, BUFFER_SIZE);
+        ssize_t size = fmin(input->size() - cursor, BUFFER_SIZE);
         memcpy(buffer, data + cursor, size);
-        amount_written = ::write(_id, buffer, size);
+        amount_written = ::write(id, buffer, size);
+        if (amount_written == -1)
+            return -1;
         cursor += amount_written;
     } while (amount_written == BUFFER_SIZE);
 
@@ -68,6 +72,6 @@ int Socket::write(const std::shared_ptr<std::string>& input) const {
 int Socket::get_error() const {
     int error_code;
     int error_code_size = sizeof(error_code);
-    getsockopt(_id, SOL_SOCKET, SO_ERROR, &error_code, reinterpret_cast<socklen_t *>(&error_code_size));
+    getsockopt(id, SOL_SOCKET, SO_ERROR, &error_code, reinterpret_cast<socklen_t *>(&error_code_size));
     return error_code;
 }

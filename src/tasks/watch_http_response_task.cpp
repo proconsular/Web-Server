@@ -9,8 +9,10 @@ void WatchHttpResponseTask::perform() {
     if (carrier->status == FULFILLED) {
         _callback(carrier->http_response);
         carrier->status = EXHAUSTED;
+        _alive = false;
     } else if (carrier->status == FAILED) {
         _callback(nullptr);
         carrier->status = EXHAUSTED;
+        _alive = false;
     }
 }

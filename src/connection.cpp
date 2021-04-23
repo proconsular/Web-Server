@@ -12,6 +12,6 @@ bool Connection::read(const std::shared_ptr<std::string>& output) {
     return amount > 0;
 }
 
-bool Connection::write(const std::shared_ptr<std::string>& input) {
-    socket.write(input);
+bool Connection::write(const std::shared_ptr<std::string>& input) const {
+    return socket.write(input) >= 0;
 }

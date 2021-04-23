@@ -8,16 +8,18 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <unistd.h>
-#include <stdlib.h>
+#include <cstdlib>
 #include <string>
 #include <memory>
-#include <stdio.h>
-#include <string.h>
+#include <cstdio>
+#include <cstring>
+#include <sys/un.h>
+#include <arpa/inet.h>
 
 class Socket {
 public:
     Socket() {}
-    Socket(int id): _id(id) {}
+    Socket(int id): id(id) {}
 
     int init();
     int bind();
@@ -32,17 +34,36 @@ public:
 
     void setup(int);
 
-    int id() const {
-        return _id;
-    }
-
     int port() const {
-        return _port;
+        return _port != 0 ? _port : ntohs(ip_address.sin_port);
     }
 
-    struct sockaddr_in _address;
+    std::string ip() const {
+        struct sockaddr_in* pV4Addr = (struct sockaddr_in*)&ip_address;
+        struct in_addr ipAddr = pV4Addr->sin_addr;
+
+        char str[INET_ADDRSTRLEN];
+        inet_ntop(AF_INET, &ipAddr, str, INET_ADDRSTRLEN);
+        return str;
+    }
+
+    std::string get_socket() const {
+        return ip() + ":" + std::to_string(port());
+    }
+
+    enum {
+        UNIX,
+        TCP,
+        UDP,
+    } type;
+
+    struct sockaddr_in ip_address;
+    struct sockaddr_un unix_address;
+
+    int id;
+
 private:
-    int _id, _port;
+    int _port;
 };
 
 #endif //P8_WEB_SERVER_SOCKET_H

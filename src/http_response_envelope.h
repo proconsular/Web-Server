@@ -8,14 +8,14 @@
 #include <utility>
 
 #include "connection.h"
-#include "http_response.h"
+#include "objects/http_message.h"
 
 class HTTPResponseEnvelope {
 public:
-    HTTPResponseEnvelope(std::shared_ptr<Connection> conn, std::shared_ptr<HTTPResponse> response): connection(std::move(conn)), response(std::move(response)) {}
+    HTTPResponseEnvelope(std::shared_ptr<Connection> conn, std::shared_ptr<HttpMessage> response): connection(std::move(conn)), response(std::move(response)) {}
 
     std::shared_ptr<Connection> connection;
-    std::shared_ptr<HTTPResponse> response;
+    std::shared_ptr<HttpMessage> response;
 };
 
 #endif //P8_WEB_SERVER_HTTP_RESPONSE_ENVELOPE_H

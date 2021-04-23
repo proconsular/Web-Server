@@ -3,9 +3,10 @@
 //
 
 #include "receive_http_responses_task.h"
-#include "http_response_parser.h"
 #include "constants.h"
 #include "utils.h"
+
+#include "http_message_parser.h"
 
 #include <algorithm>
 #include <iostream>
@@ -23,11 +24,11 @@ void ReceiveHTTPResponsesTask::perform() {
 
             const ssize_t buffer_size = 100 * KB;
 
-            int socket = carrier->connection->socket.id();
+            int socket = carrier->connection->socket.id;
 
             ssize_t amount = 0;
 
-            HttpResponseParser parser;
+            HttpMessageParser parser(RESPONSE);
 
             auto was_read_time = get_time();
 
@@ -59,10 +60,17 @@ void ReceiveHTTPResponsesTask::perform() {
 
             if (did_read_any) {
                 carrier->status = FULFILLED;
-                carrier->http_response = parser.get_response();
+                carrier->http_response = parser.get_message();
             } else {
                 if (get_ms_to_now(carrier->initial_read_time) >= 15000) {
-                    carrier->status = FAILED;
+                    if (_state->config->auto_resend_on_request_failure && carrier->send_attempts < 3) {
+                        carrier->send_attempts++;
+                        carrier->status = NEW;
+                        carrier->connection->terminate();
+                        carrier->connection = nullptr;
+                    } else {
+                        carrier->status = FAILED;
+                    }
                 }
             }
             

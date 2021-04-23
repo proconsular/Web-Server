@@ -28,9 +28,9 @@ int main() {
 
     HttpClientApp http;
 
-    auto request = std::make_shared<HTTPRequest>("GET", "/");
+    auto request = HttpMessage::make_request("GET", "/");
 
-    std::shared_ptr<HTTPResponse> response;
+    std::shared_ptr<HttpMessage> response;
     if (http.send("http://www.google.com", request, response)) {
         std::cout << *response->generate() << std::endl;
     }

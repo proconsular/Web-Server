@@ -30,7 +30,7 @@ void StateActionReceiver::receive(const Action &action) {
         case RemoveClientConnection: {
             auto connection = std::static_pointer_cast<Connection>(action.data);
             _state->connections.erase(connection->id());
-            close(connection->socket.id());
+            close(connection->socket.id);
             break;
         }
         case CreateClientRequest:

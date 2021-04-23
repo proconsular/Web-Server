@@ -5,10 +5,12 @@
 #include "send_responses_task.h"
 
 void SendResponsesTask::perform() {
-    for (auto envelope: state->outbound_http_response_queue) {
+    for (const auto& envelope: state->outbound_http_response_queue) {
         auto response = envelope.response->generate();
         envelope.connection->socket.write(response);
-//        envelope.connection->terminate();
+        if (envelope.connection->persistence == Connection::CLOSE) {
+            envelope.connection->terminate();
+        }
     }
     if (!state->outbound_http_response_queue.empty()) {
         _controller->apply(Action(ClearHttpResponses));

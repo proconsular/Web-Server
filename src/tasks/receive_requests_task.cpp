@@ -3,8 +3,7 @@
 //
 
 #include "receive_requests_task.h"
-#include "http_request.h"
-#include "http_request_parser.h"
+#include "http_message_parser.h"
 
 void ReceiveRequestsTask::perform() {
     for (const auto& pair : state->connections) {
@@ -15,11 +14,13 @@ void ReceiveRequestsTask::perform() {
         if (error == 0) {
             auto input = std::make_shared<std::string>();
             if (connection->read(input)) {
-                auto request = HTTPRequestParser::parse(input);
+                HttpMessageParser parser(REQUEST);
+                parser.partial_parse(input->c_str(), input->size());
+                parser.finalize();
                 connection->active_requests++;
                 connection->last_read = std::chrono::high_resolution_clock::now();
                 _controller->apply(Action(ModifyClientConnection, connection));
-                _controller->apply(Action(CreateHttpRequest, std::make_shared<HTTPRequestEnvelope>(connection, request)));
+                _controller->apply(Action(CreateHttpRequest, std::make_shared<HTTPRequestEnvelope>(connection, parser.get_message())));
             }
         } else {
             connection->terminate();

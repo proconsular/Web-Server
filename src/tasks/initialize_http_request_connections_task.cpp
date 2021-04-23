@@ -16,16 +16,37 @@ void InitializeHTTPRequestConnectionsTask::perform() {
         if (carrier->status == NEW) {
             auto _carrier = std::make_shared<HTTPRequestCarrier>(*carrier);
 
-            int socket_id = -1;
+            std::shared_ptr<Connection> connection;
+
+            std::string socket_name;
 
             if (carrier->url.protocol == "http") {
-                socket_id = create_ip_socket(carrier);
+                socket_name = std::string(carrier->url.domain_to_cstr()) + ":" + std::to_string(carrier->url.port);
             } else if (carrier->url.protocol == "unix") {
-                socket_id = create_unix_socket(carrier);
+                socket_name = carrier->url.to_string();
             }
 
-            if (socket_id >= 0) {
-                auto connection = std::make_shared<Connection>(Socket(socket_id));
+            if (_state->connections.find(socket_name) != _state->connections.end()) {
+                auto conn = _state->connections[socket_name];
+                if (conn->alive) {
+                    connection = conn;
+                }
+            }
+
+            if (connection == nullptr) {
+                Socket socket;
+                if (carrier->url.protocol == "http") {
+                    socket = create_ip_socket(_carrier);
+                } else if (carrier->url.protocol == "unix") {
+                    socket = create_unix_socket(_carrier);
+                }
+                if (socket.id >= 0) {
+                    connection = std::make_shared<Connection>(Server, socket_name, socket);
+                }
+            }
+
+            if (connection != nullptr) {
+                _state->connections[connection->id()] = connection;
                 _carrier->connection = connection;
                 _carrier->status = CONNECTED;
             } else {
@@ -37,7 +58,7 @@ void InitializeHTTPRequestConnectionsTask::perform() {
     }
 }
 
-int InitializeHTTPRequestConnectionsTask::create_ip_socket(const std::shared_ptr<HTTPRequestCarrier> &carrier) {
+Socket InitializeHTTPRequestConnectionsTask::create_ip_socket(const std::shared_ptr<HTTPRequestCarrier> &carrier) {
     sockaddr_in server_address{};
 
     server_address.sin_family = AF_INET;
@@ -84,13 +105,21 @@ int InitializeHTTPRequestConnectionsTask::create_ip_socket(const std::shared_ptr
             }
             break;
         }
+        sockaddr* addr = res0->ai_addr;
+        auto* in = reinterpret_cast<sockaddr_in*>(addr);
+        server_address.sin_addr = in->sin_addr;
+
         freeaddrinfo(res0);
     }
 
-    return socket_id;
+    Socket socket;
+    socket.id = socket_id;
+    socket.ip_address = server_address;
+
+    return socket;
 }
 
-int InitializeHTTPRequestConnectionsTask::create_unix_socket(const std::shared_ptr<HTTPRequestCarrier> &carrier) {
+Socket InitializeHTTPRequestConnectionsTask::create_unix_socket(const std::shared_ptr<HTTPRequestCarrier> &carrier) {
     int sock = socket(AF_UNIX, SOCK_STREAM, 0);
 
     auto str = carrier->url.to_string().substr(7);
@@ -105,5 +134,9 @@ int InitializeHTTPRequestConnectionsTask::create_unix_socket(const std::shared_p
         return -1;
     }
 
-    return sock;
+    Socket socket;
+    socket.id = sock;
+    socket.unix_address = addr;
+
+    return socket;
 }

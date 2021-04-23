@@ -13,10 +13,10 @@ using json = nlohmann::json;
 const char *docker_sock = "unix:///var/run/docker.sock";
 
 bool DockerInterfaceApp::create_container(std::string& id, const std::string &body) {
-    auto request = std::make_shared<HTTPRequest>("POST", "/containers/create");
-    request->headers["Content-Type"] = "application/json";
+    auto request = HttpMessage::make_request("POST", "/containers/create");
+    request->headers["Content-Type"] = std::make_shared<std::string>("application/json");
     request->body = std::make_shared<std::string>(body);
-    std::shared_ptr<HTTPResponse> response;
+    std::shared_ptr<HttpMessage> response;
     if (http.send(docker_sock, request, response)) {
         if (response->code == 201 && response->body != nullptr) {
             json data = json::parse(*response->body);
@@ -28,8 +28,8 @@ bool DockerInterfaceApp::create_container(std::string& id, const std::string &bo
 }
 
 bool DockerInterfaceApp::create_container(std::string& id, const std::string &image, const std::string &fromPort, const std::string &toPort) {
-    auto request = std::make_shared<HTTPRequest>("POST", "/containers/create");
-    request->headers["Content-Type"] = "application/json";
+    auto request = HttpMessage::make_request("POST", "/containers/create");
+    request->headers["Content-Type"] = std::make_shared<std::string>("application/json");
     auto p = string_format("%s/tcp", fromPort.c_str());
     json body = {
             {"Image",        image},
@@ -45,7 +45,7 @@ bool DockerInterfaceApp::create_container(std::string& id, const std::string &im
                      }}
     };
     request->body = std::make_shared<std::string>(body.dump());
-    std::shared_ptr<HTTPResponse> response;
+    std::shared_ptr<HttpMessage> response;
     if (http.send(docker_sock, request, response)) {
         if (response->code == 201 && response->body != nullptr) {
             json data = json::parse(*response->body);
@@ -57,36 +57,36 @@ bool DockerInterfaceApp::create_container(std::string& id, const std::string &im
 }
 
 bool DockerInterfaceApp::remove_container(const std::string &id) {
-    auto request = std::make_shared<HTTPRequest>("DELETE", string_format("/containers/%s", id.c_str()));
-    std::shared_ptr<HTTPResponse> response;
+    auto request = HttpMessage::make_request("DELETE", string_format("/containers/%s", id.c_str()));
+    std::shared_ptr<HttpMessage> response;
     http.send(docker_sock, request, response);
     return response->code == 204;
 }
 
 bool DockerInterfaceApp::remove_container_forced(const std::string &id) {
-    auto request = std::make_shared<HTTPRequest>("DELETE", string_format("/containers/%s?force=true", id.c_str()));
-    std::shared_ptr<HTTPResponse> response;
+    auto request = HttpMessage::make_request("DELETE", string_format("/containers/%s?force=true", id.c_str()));
+    std::shared_ptr<HttpMessage> response;
     http.send(docker_sock, request, response);
     return response->code == 204;
 }
 
 bool DockerInterfaceApp::start_container(const std::string &id) {
-    auto request = std::make_shared<HTTPRequest>("POST", string_format("/containers/%s/start", id.c_str()));
-    std::shared_ptr<HTTPResponse> response;
+    auto request = HttpMessage::make_request("POST", string_format("/containers/%s/start", id.c_str()));
+    std::shared_ptr<HttpMessage> response;
     http.send(docker_sock, request, response);
     return response->code == 204;
 }
 
 bool DockerInterfaceApp::stop_container(const std::string &id) {
-    auto request = std::make_shared<HTTPRequest>("POST", string_format("/containers/%s/stop", id.c_str()));
-    std::shared_ptr<HTTPResponse> response;
+    auto request = HttpMessage::make_request("POST", string_format("/containers/%s/stop", id.c_str()));
+    std::shared_ptr<HttpMessage> response;
     http.send(docker_sock, request, response);
     return response->code == 204;
 }
 
 bool DockerInterfaceApp::inspect_container(const std::string &id, json& object) {
-    auto request = std::make_shared<HTTPRequest>("GET", string_format("/containers/%s/json", id.c_str()));
-    std::shared_ptr<HTTPResponse> response;
+    auto request = HttpMessage::make_request("GET", string_format("/containers/%s/json", id.c_str()));
+    std::shared_ptr<HttpMessage> response;
     if (http.send(docker_sock, request, response)) {
         if (response->code == 200 && response->body != nullptr) {
             object = json::parse(*response->body);

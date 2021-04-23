@@ -19,7 +19,11 @@ public:
 
     void add(const std::shared_ptr<Task>&);
 
-    void terminate() {
+    void enable() {
+        alive = true;
+    }
+
+    void disable() {
         alive = false;
     }
 private:

@@ -4,6 +4,7 @@
 
 #include "finalize_client_requests_task.h"
 #include "client_request.h"
+#include "objects/http_message.h"
 
 #include <memory>
 
@@ -12,7 +13,10 @@ void FinalizeClientRequestsTask::perform() {
         auto request = std::make_shared<ClientRequest>(*pair.second);
         switch (request->status) {
             case Complete: {
-                auto response = std::make_shared<HTTPResponse>(200, "OK", "HTTP/1.1");
+                auto response = std::make_shared<HttpMessage>(RESPONSE);
+                response->code = 200;
+                response->version = "HTTP/1.1";
+                response->status = "OK";
                 switch (request->type) {
                     case RetrieveFile: {
                         response->body = request->data;
@@ -28,7 +32,10 @@ void FinalizeClientRequestsTask::perform() {
                 break;
             }
             case Failed: {
-                auto response = std::make_shared<HTTPResponse>(500, "Internal Server Error", "HTTP/1.1");
+                auto response = std::make_shared<HttpMessage>(RESPONSE);
+                response->code = 500;
+                response->version = "HTTP/1.1";
+                response->status = "Internal Server Error";
                 switch (request->type) {
                     case RetrieveFile: {
                         response->code = 404;
@@ -43,7 +50,10 @@ void FinalizeClientRequestsTask::perform() {
             }
             case New: {
                 if (request->type == Unsupported) {
-                    auto response = std::make_shared<HTTPResponse>(501, "Not Implemented", "HTTP/1.1");
+                    auto response = std::make_shared<HttpMessage>(RESPONSE);
+                    response->code = 501;
+                    response->version = "HTTP/1.1";
+                    response->status = "Not Implemented";
                     _controller->apply(Action(CreateHttpResponse, std::make_shared<HTTPResponseEnvelope>(request->connection, response)));
                 }
                 break;

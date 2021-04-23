@@ -16,6 +16,8 @@ public:
         port_fixed = false;
         base_url = URL::parse("/");
         http_response_read_wait_ms = 5000;
+        auto_reconnect_on_request_failure = true;
+        auto_resend_on_request_failure = true;
     }
 
     URL base_url;
@@ -25,6 +27,9 @@ public:
     uint32_t http_response_read_wait_ms;
 
     bool port_fixed;
+
+    bool auto_reconnect_on_request_failure;
+    bool auto_resend_on_request_failure;
 
     std::string from_file;
 };

@@ -44,7 +44,7 @@ void LogActionReceiver::receive(const Action &action) {
             output.append(
                     string_format("REQUEST: %s %s %s from %s",
                                   envelope->request->method.c_str(),
-                                  envelope->request->uri.to_string().c_str(),
+                                  envelope->request->url.to_string().c_str(),
                                   envelope->request->version.c_str(),
                                   envelope->connection->id().c_str()
                                   ));
@@ -91,7 +91,7 @@ void LogActionReceiver::receive(const Action &action) {
         }
         case CreateOutboundHttpRequest: {
             auto carrier = std::static_pointer_cast<HTTPRequestCarrier>(action.data);
-            output.append(string_format("QUEUED OUTBOUND: REQUEST: (%s) %s %s %s to %s", carrier->id().c_str(), carrier->http_request->method.c_str(), carrier->http_request->uri.to_string().c_str(), carrier->http_request->version.c_str(), carrier->url.domain_to_cstr()));
+            output.append(string_format("QUEUED OUTBOUND: REQUEST: (%s) %s %s %s to %s", carrier->id().c_str(), carrier->http_request->method.c_str(), carrier->http_request->url.to_string().c_str(), carrier->http_request->version.c_str(), carrier->url.domain_to_cstr()));
             break;
         }
         case InitializeHttpRequestConnection: {

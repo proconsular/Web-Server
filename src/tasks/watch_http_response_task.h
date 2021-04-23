@@ -15,7 +15,7 @@
 
 class WatchHttpResponseTask: public Task {
 public:
-    WatchHttpResponseTask(std::shared_ptr<State> state, std::string id, std::function<void (std::shared_ptr<HTTPResponse>)> callback): _state(std::move(state)), _id(std::move(id)), _callback(std::move(callback)), _alive(true) {}
+    WatchHttpResponseTask(std::shared_ptr<State> state, std::string id, std::function<void (std::shared_ptr<HttpMessage>)> callback): _state(std::move(state)), _id(std::move(id)), _callback(std::move(callback)), _alive(true) {}
 
     void perform() override;
 
@@ -26,7 +26,7 @@ private:
     std::shared_ptr<State> _state;
 
     std::string _id;
-    std::function<void (std::shared_ptr<HTTPResponse>)> _callback;
+    std::function<void (std::shared_ptr<HttpMessage>)> _callback;
 
     bool _alive;
 };

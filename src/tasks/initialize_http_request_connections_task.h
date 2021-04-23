@@ -24,8 +24,8 @@ private:
     std::shared_ptr<Controller> _controller;
     bool _alive;
 
-    static int create_ip_socket(const std::shared_ptr<HTTPRequestCarrier>&);
-    static int create_unix_socket(const std::shared_ptr<HTTPRequestCarrier>&);
+    static Socket create_ip_socket(const std::shared_ptr<HTTPRequestCarrier>&);
+    static Socket create_unix_socket(const std::shared_ptr<HTTPRequestCarrier>&);
 };
 
 

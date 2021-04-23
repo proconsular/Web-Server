@@ -3,45 +3,36 @@
 //
 
 #include "http_client_app.h"
-#include "state.h"
 
-#include "controllers/direct_controller.h"
-#include "actions/action.h"
+HttpClientApp::HttpClientApp() {
+    _state = std::make_shared<State>();
+    _controller = std::make_shared<DirectController>(_state);
 
-#include "tasks/initialize_http_request_connections_task.h"
-#include "tasks/send_http_requests_task.h"
-#include "tasks/receive_http_responses_task.h"
-#include "tasks/watch_http_response_task.h"
+    _controller->apply(Action(StartApp, std::make_shared<std::string>("Http Client")));
 
-#include "receivers/log_action_receiver.h"
+    _state->scheduler->add(std::make_shared<InitializeHTTPRequestConnectionsTask>(_state, _controller));
+    _state->scheduler->add(std::make_shared<SendHTTPRequestsTask>(_state, _controller));
+    _state->scheduler->add(std::make_shared<ReceiveHTTPResponsesTask>(_state, _controller));
+}
 
-bool HttpClientApp::send(const std::string &domain, const std::shared_ptr<HTTPRequest> &request, std::shared_ptr<HTTPResponse>& out) {
-    auto state = std::make_shared<State>();
-    auto controller = std::make_shared<DirectController>(state);
-
-    if (!_log_filename.empty())
-        controller->add_receiver(std::make_shared<LogActionReceiver>(_log_filename));
-
-    controller->apply(Action(StartApp, std::make_shared<std::string>("Http Client")));
-
+bool HttpClientApp::send(const std::string &domain, const std::shared_ptr<HttpMessage> &request, std::shared_ptr<HttpMessage>& out) {
     auto url = URL::parse(domain);
-    request->headers["Host"] = url.domain_to_cstr();
-    controller->apply(Action(CreateOutboundHttpRequest, std::make_shared<HTTPRequestCarrier>(url, request)));
-    auto id = state->outbound_http_request_queue.begin()->second->id();
+    request->headers["Host"] = std::make_shared<std::string>(url.domain_to_cstr());
 
-    std::shared_ptr<HTTPResponse> resp;
+    auto carrier = std::make_shared<HTTPRequestCarrier>(url, request);
+    _controller->apply(Action(CreateOutboundHttpRequest, carrier));
 
-    auto trigger = [&resp, &state](const std::shared_ptr<HTTPResponse>& response) {
+    std::shared_ptr<HttpMessage> resp;
+
+    auto trigger = [&resp, this](const std::shared_ptr<HttpMessage>& response) {
         resp = response;
-        state->scheduler->terminate();
+        _state->scheduler->disable();
     };
 
-    state->scheduler->add(std::make_shared<InitializeHTTPRequestConnectionsTask>(state, controller));
-    state->scheduler->add(std::make_shared<SendHTTPRequestsTask>(state, controller));
-    state->scheduler->add(std::make_shared<ReceiveHTTPResponsesTask>(state, controller));
-    state->scheduler->add(std::make_shared<WatchHttpResponseTask>(state, id, trigger));
+    _state->scheduler->add(std::make_shared<WatchHttpResponseTask>(_state, carrier->id(), trigger));
 
-    state->scheduler->run();
+    _state->scheduler->enable();
+    _state->scheduler->run();
 
     if (resp != nullptr) {
         out = resp;
