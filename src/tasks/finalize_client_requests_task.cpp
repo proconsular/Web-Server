@@ -21,6 +21,9 @@ void FinalizeClientRequestsTask::perform() {
                     case RetrieveFile: {
                         response->body = request->data;
                         response->headers["Content-Type"] = std::make_shared<std::string>(getContentType(request->path.extension));
+                        for (const auto & response_header : request->response_headers) {
+                            response->headers[response_header.first] = std::make_shared<std::string>(response_header.second);
+                        }
                         break;
                     }
                     default:

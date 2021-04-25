@@ -22,8 +22,14 @@ void ProcessHTTPRequestsTask::perform() {
         }
 
         if (request->method == "GET") {
-            client_request->type = Requests::RetrieveFile;
-            client_request->uri = request->url;
+            if (state->routes.empty() || state->routes.find(request->url.to_string()) == state->routes.end()) {
+                client_request->type = Requests::RetrieveFile;
+                client_request->uri = request->url;
+            } else {
+                client_request->type = ResolveRoute;
+                client_request->route = state->routes[request->url.to_string()];
+                client_request->http_request = request;
+            }
         }
         _controller->apply(Action(CreateClientRequest, client_request));
     }

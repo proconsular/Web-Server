@@ -34,4 +34,6 @@ uint32_t get_millisecond_duration(std::chrono::high_resolution_clock::time_point
 
 uint32_t get_ms_to_now(std::chrono::high_resolution_clock::time_point t);
 
+std::vector<std::string> parse_accept_header(const std::string& header);
+
 #endif //P8_WEB_SERVER_UTILS_H

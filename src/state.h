@@ -14,6 +14,7 @@
 #include "http_request_carrier.h"
 
 #include <vector>
+#include "objects/route.h"
 
 class State {
 public:
@@ -26,8 +27,7 @@ public:
     std::map<std::string, std::shared_ptr<Connection>> connections;
     std::map<std::string, std::shared_ptr<ClientRequest>> requests;
 
-    std::map<std::string, std::shared_ptr<HTTPRequestCarrier>> outbound_http_request_queue;
-//    std::vector<HTTPResponseEnvelope> inbound_http_response_queue;
+    std::map<std::string, std::shared_ptr<HTTPRequestCarrier>> active_requests;
 
     std::vector<HTTPRequestEnvelope> inbound_http_request_queue;
     std::vector<HTTPResponseEnvelope> outbound_http_response_queue;
@@ -35,6 +35,8 @@ public:
     std::shared_ptr<TaskScheduler> scheduler;
 
     std::shared_ptr<Configuration> config;
+
+    std::map<std::string, Route> routes;
 };
 
 

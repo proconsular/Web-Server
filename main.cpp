@@ -13,14 +13,12 @@
 #include "tasks/initialize_http_request_connections_task.h"
 #include "tasks/receive_http_responses_task.h"
 #include "tasks/send_http_requests_task.h"
+#include "tasks/load_routing_data_task.h"
 
 #include "controllers/direct_controller.h"
 #include "receivers/log_action_receiver.h"
 
 #include "state.h"
-#include "utils.h"
-
-#include "json.hpp"
 
 int main() {
     auto state = std::make_shared<State>();
@@ -30,6 +28,7 @@ int main() {
     controller->apply(Action(StartApp, std::make_shared<std::string>("Http Server")));
 
     state->scheduler->add(std::make_shared<LoadConfigurationTask>(controller));
+    state->scheduler->add(std::make_shared<LoadRoutingDataTask>(state));
     state->scheduler->add(std::make_shared<InitializeServerTask>(state, controller));
     state->scheduler->add(std::make_shared<ReceptionTask>(state, controller));
     state->scheduler->add(std::make_shared<PruneConnectionsTask>(state, controller));

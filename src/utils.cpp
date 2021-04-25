@@ -86,3 +86,89 @@ uint32_t get_millisecond_duration(std::chrono::high_resolution_clock::time_point
 uint32_t get_ms_to_now(std::chrono::high_resolution_clock::time_point t) {
     return get_millisecond_duration(get_time(), t);
 }
+
+std::vector<std::string> parse_accept_header(const std::string& header) {
+    std::map<float, std::map<std::string, std::vector<std::string>>> data;
+
+    float quality = 1;
+
+    std::string primary, secondary;
+    auto i = header.cbegin();
+    while (*i == ' ') i++;
+    auto s = i;
+    for (; i != header.cend();) {
+        if (*i == '/') {
+            primary = std::string(s, i);
+            ++i;
+            s = i;
+        } else if (*i == ';' || *i == ',') {
+            if (s < i)
+                secondary = std::string(s, i);
+            if (*i == ',') {
+                if (data.find(quality) == data.end()) {
+                    data[quality] = std::map<std::string, std::vector<std::string>>();
+                    if (data[quality].find(primary) == data[quality].end()) {
+                        data[quality][primary] = std::vector<std::string>();
+                    }
+                }
+                data[quality][primary].push_back(secondary);
+                ++i;
+                while (*i == ' ') i++;
+                s = i;
+            } else if (*i == ';') {
+                while (*i != '=') i++;
+                ++i;
+                auto e = i;
+                while (e != header.cend() && *e != ',') e++;
+                auto str = std::string(i, e);
+                quality = atof(str.c_str());
+                i = e;
+                s = i + 1;
+            }
+        } else {
+            i++;
+        }
+    }
+
+    if (s < i)
+        secondary = std::string(s, i);
+    if (data.find(quality) == data.end()) {
+        data[quality] = std::map<std::string, std::vector<std::string>>();
+        if (data[quality].find(primary) == data[quality].end()) {
+            data[quality][primary] = std::vector<std::string>();
+        }
+    }
+    data[quality][primary].push_back(secondary);
+
+    std::vector<std::string> list;
+
+    for (auto iter = data.crbegin(); iter != data.crend(); iter++) {
+        auto primes = iter->second;
+        std::vector<std::string> keys;
+        keys.reserve(primes.size());
+        for (const auto& p : primes)
+            keys.push_back(p.first);
+        std::sort(keys.begin(), keys.end(), [](const std::string& a, const std::string& b) {
+            if (a != "*" && b == "*")
+                return true;
+            if (a == "*" && b != "*")
+                return false;
+            return true;
+        });
+        for (const auto & k : keys) {
+            auto seconds = primes[k];
+            std::sort(seconds.begin(), seconds.end(), [](const std::string& a, const std::string& b) {
+                if (a != "*" && b == "*")
+                    return true;
+                if (a == "*" && b != "*")
+                    return false;
+                return true;
+            });
+            for (const auto & s: seconds) {
+                list.push_back(k + "/" + s);
+            }
+        }
+    }
+
+    return list;
+}

@@ -5,7 +5,7 @@
 #include "send_http_requests_task.h"
 
 void SendHTTPRequestsTask::perform() {
-    for (const auto& pair: _state->outbound_http_request_queue) {
+    for (const auto& pair: _state->active_requests) {
         auto envelope = std::make_shared<HTTPRequestCarrier>(*pair.second);
         if (envelope->status == CONNECTED) {
             auto data = envelope->http_request->generate();

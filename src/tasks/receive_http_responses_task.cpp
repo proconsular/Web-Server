@@ -14,7 +14,7 @@
 #include <iterator>
 
 void ReceiveHTTPResponsesTask::perform() {
-    for (const auto& pair: _state->outbound_http_request_queue) {
+    for (const auto& pair: _state->active_requests) {
         auto carrier = std::make_shared<HTTPRequestCarrier>(*pair.second);
         if (carrier->status == SENT) {
             if (!carrier->has_been_read) {

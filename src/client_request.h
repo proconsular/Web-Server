@@ -12,10 +12,13 @@
 #include "url.h"
 #include "identifiable.h"
 #include "utils.h"
+#include "objects/http_message.h"
+#include "objects/route.h"
 
 enum Requests {
     Unsupported,
     RetrieveFile,
+    ResolveRoute,
 };
 
 enum RequestStatus {
@@ -41,6 +44,11 @@ public:
 
     Requests type;
     RequestStatus status;
+
+    std::shared_ptr<HttpMessage> http_request;
+    std::map<std::string, std::string> response_headers;
+
+    Route route;
 
     URL uri;
     URL path;

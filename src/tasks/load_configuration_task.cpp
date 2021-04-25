@@ -32,6 +32,9 @@ void LoadConfigurationTask::perform() {
         if (config.find("port_fixed") != config.end()) {
             new_config->port_fixed = config["port_fixed"];
         }
+        if (config.find("routes") != config.end()) {
+            new_config->routing_directory = config["routes"];
+        }
         new_config->from_file = filename;
         _controller->apply(Action(SetConfiguration, new_config));
     }

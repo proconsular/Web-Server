@@ -32,6 +32,7 @@ public:
     bool auto_resend_on_request_failure;
 
     std::string from_file;
+    std::string routing_directory;
 };
 
 #endif //P8_WEB_SERVER_CONFIGURATION_H

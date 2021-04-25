@@ -66,7 +66,7 @@ void StateActionReceiver::receive(const Action &action) {
         case ReceiveHttpResponse:
         case ModifyHttpCarrier: {
             auto carrier = std::static_pointer_cast<HTTPRequestCarrier>(action.data);
-            _state->outbound_http_request_queue[carrier->id()] = carrier;
+            _state->active_requests[carrier->id()] = carrier;
             break;
         }
         default:
