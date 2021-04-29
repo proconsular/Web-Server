@@ -17,7 +17,7 @@ RUN export PATH="/usr/local/ssl/bin:${PATH}"
 
 WORKDIR /app
 
-COPY cmake-build-debug/web ./web
+COPY web ./web
 COPY src ./src
 COPY tests ./tests
 COPY lib ./lib
