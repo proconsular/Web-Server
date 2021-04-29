@@ -29,11 +29,15 @@ public:
     std::shared_ptr<State> state() const {
         return _state;
     }
+
+    void enable_logging(const std::string& filename) {
+        _controller->add_receiver(std::make_shared<LogActionReceiver>(filename));
+    }
 private:
     std::string _log_filename;
 
     std::shared_ptr<State> _state;
-    std::shared_ptr<Controller> _controller;
+    std::shared_ptr<DirectController> _controller;
 };
 
 

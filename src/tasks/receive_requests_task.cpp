@@ -13,9 +13,36 @@ void ReceiveRequestsTask::perform() {
         int error = connection->socket.get_error();
         if (error == 0) {
             auto input = std::make_shared<std::string>();
-            if (connection->read(input)) {
-                HttpMessageParser parser(REQUEST);
-                parser.partial_parse(input->c_str(), input->size());
+
+            const int buffer_size = 10 * 1024;
+
+            auto last_read = get_time();
+
+            HttpMessageParser parser(REQUEST);
+
+            bool still_reading = false;
+            bool read_any = false;
+
+            int data_read;
+            do {
+                char *buffer = new char[buffer_size];
+
+                if (connection->security == UNSECURE) {
+                    data_read = read(connection->socket.id, buffer, buffer_size);
+                } else {
+                    data_read = SSL_read(connection->ssl, buffer, buffer_size);
+                }
+
+                if (data_read > 0) {
+                    last_read = get_time();
+                    still_reading = parser.partial_parse(buffer, data_read);
+                    read_any = true;
+                }
+
+                delete[] buffer;
+            } while (get_ms_to_now(last_read) <= 1000 && still_reading);
+
+            if (read_any) {
                 parser.finalize();
                 connection->active_requests++;
                 connection->last_read = std::chrono::high_resolution_clock::now();

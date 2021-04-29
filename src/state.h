@@ -23,7 +23,12 @@ public:
         config = std::make_shared<Configuration>();
     }
 
+    const SSL_METHOD *ssl_method;
+    SSL_CTX *ssl_context;
+
     Socket server_socket;
+    Socket tls_socket;
+
     std::map<std::string, std::shared_ptr<Connection>> connections;
     std::map<std::string, std::shared_ptr<ClientRequest>> requests;
 
@@ -36,7 +41,7 @@ public:
 
     std::shared_ptr<Configuration> config;
 
-    std::map<std::string, Route> routes;
+    std::vector<Route> routes;
 };
 
 

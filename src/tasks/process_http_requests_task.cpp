@@ -22,12 +22,12 @@ void ProcessHTTPRequestsTask::perform() {
         }
 
         if (request->method == "GET") {
-            if (state->routes.empty() || state->routes.find(request->url.to_string()) == state->routes.end()) {
+            if (state->routes.empty()) {
                 client_request->type = Requests::RetrieveFile;
                 client_request->uri = request->url;
             } else {
                 client_request->type = ResolveRoute;
-                client_request->route = state->routes[request->url.to_string()];
+                client_request->uri = request->url;
                 client_request->http_request = request;
             }
         }

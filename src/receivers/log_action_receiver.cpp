@@ -38,6 +38,10 @@ void LogActionReceiver::receive(const Action &action) {
             auto socket = std::static_pointer_cast<Socket>(action.data);
             output.append(string_format("STARTED: server: %i", socket->port()));
             break;
+        }case CreateTLSServerSocket: {
+            auto socket = std::static_pointer_cast<Socket>(action.data);
+            output.append(string_format("STARTED: TLS server: %i", socket->port()));
+            break;
         }
         case CreateHttpRequest: {
             auto envelope = std::static_pointer_cast<HTTPRequestEnvelope>(action.data);

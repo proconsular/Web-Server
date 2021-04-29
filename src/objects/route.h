@@ -7,17 +7,22 @@
 
 #include <iostream>
 #include <map>
+#include <vector>
+
+enum RouteType {
+    BASIC,
+    COMPLEX,
+};
 
 class Route {
 public:
+    RouteType type;
 
     std::string url;
     std::string default_file;
 
-    std::map<std::string, std::string> content_type;
-    std::map<std::string, std::string> language;
-
-    std::string cache_control;
+    std::map<std::string, std::string> attributes;
+    std::vector<std::map<std::string, std::string>> formats;
 };
 
 

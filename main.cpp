@@ -14,6 +14,8 @@
 #include "tasks/receive_http_responses_task.h"
 #include "tasks/send_http_requests_task.h"
 #include "tasks/load_routing_data_task.h"
+#include "tasks/tls_reception_task.h"
+#include "tasks/initialize_tls_server_socket_task.h"
 
 #include "controllers/direct_controller.h"
 #include "receivers/log_action_receiver.h"
@@ -30,7 +32,9 @@ int main() {
     state->scheduler->add(std::make_shared<LoadConfigurationTask>(controller));
     state->scheduler->add(std::make_shared<LoadRoutingDataTask>(state));
     state->scheduler->add(std::make_shared<InitializeServerTask>(state, controller));
+    state->scheduler->add(std::make_shared<InitializeTLSServerSocketTask>(state, controller));
     state->scheduler->add(std::make_shared<ReceptionTask>(state, controller));
+    state->scheduler->add(std::make_shared<TLSReceptionTask>(state, controller));
     state->scheduler->add(std::make_shared<PruneConnectionsTask>(state, controller));
     state->scheduler->add(std::make_shared<ReceiveRequestsTask>(state, controller));
     state->scheduler->add(std::make_shared<ProcessHTTPRequestsTask>(state, controller));

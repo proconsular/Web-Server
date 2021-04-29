@@ -16,6 +16,11 @@ void StateActionReceiver::receive(const Action &action) {
             _state->server_socket = *socket;
             break;
         }
+        case CreateTLSServerSocket: {
+            auto socket = std::static_pointer_cast<Socket>(action.data);
+            _state->tls_socket = *socket;
+            break;
+        }
         case CreateHttpRequest: {
             auto envelope = std::static_pointer_cast<HTTPRequestEnvelope>(action.data);
             _state->inbound_http_request_queue.push_back(*envelope);

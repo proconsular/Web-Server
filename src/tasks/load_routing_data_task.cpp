@@ -35,30 +35,45 @@ void LoadRoutingDataTask::perform() {
             Route route;
 
             route.url = data["Route"];
-            route.default_file = data["Default"];
-            route.cache_control = data["Cache-Control"];
+            if (data.find("Default") != data.end()) {
+                route.default_file = data["Default"];
+            }
 
-            auto content_type = data["Content-Type"];
-            if (content_type.is_string()) {
-                route.content_type[content_type] = "";
-            } else if (content_type.is_object()) {
-                for (auto iter = content_type.begin(); iter != content_type.end(); iter++) {
-                    route.content_type[iter.key()] = iter.value();
+            if (data.find("Formats") != data.end()) {
+                route.type = COMPLEX;
+                auto formats = data["Formats"];
+                if (formats.is_array()) {
+                    for (const auto& format : formats) {
+                        std::map<std::string, std::string> parameters;
+                        for (auto iter = format.cbegin(); iter != format.cend(); iter++) {
+                            parameters[iter.key()] = iter.value();
+                        }
+                        route.formats.push_back(parameters);
+                    }
+                }
+            } else {
+                route.type = BASIC;
+            }
+
+            for (auto iter = data.cbegin(); iter != data.cend(); iter++) {
+                bool inherited = true;
+                for (const auto& key : {"Route", "Default", "Formats"}) {
+                    if (iter.key() == key) {
+                        inherited = false;
+                        break;
+                    }
+                }
+                if (inherited) {
+                    route.attributes[iter.key()] = iter.value();
                 }
             }
 
-            auto language = data["Content-Language"];
-            if (language.is_string()) {
-                route.language[language] = "";
-            } else if (language.is_object()) {
-                for (auto iter = language.begin(); iter != language.end(); iter++) {
-                    route.language[iter.key()] = iter.value();
-                }
-            }
-
-            _state->routes[route.url] = route;
+            _state->routes.push_back(route);
         }
         closedir(d);
     }
+    std::sort(_state->routes.begin(), _state->routes.end(), [](const Route& a, const Route& b) {
+        return compare_routes(a.url, b.url);
+    });
     _alive = false;
 }

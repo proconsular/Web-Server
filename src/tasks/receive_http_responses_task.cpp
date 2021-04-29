@@ -37,7 +37,11 @@ void ReceiveHTTPResponsesTask::perform() {
             do {
                 char* buffer = new char[buffer_size];
 
-                amount = read(socket, buffer, buffer_size);
+                if (carrier->connection->security == UNSECURE) {
+                    amount = read(socket, buffer, buffer_size);
+                } else {
+                    amount = SSL_read(carrier->connection->ssl, buffer, buffer_size);
+                }
 
                 if (amount > 0) {
                     was_read_time = get_time();

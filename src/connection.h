@@ -10,17 +10,23 @@
 #include "socket.h"
 #include "utils.h"
 #include <fcntl.h>
+#include <openssl/ssl.h>
 
 enum ConnectionType {
     Server,
     Client,
 };
 
+enum ConnectionSecurity {
+    UNSECURE,
+    SECURE,
+};
+
 class Connection {
 public:
-    explicit Connection(): alive(true), active_requests(0), persistence(KEEP_ALIVE) {}
+    explicit Connection(): alive(true), active_requests(0), persistence(KEEP_ALIVE), security(UNSECURE) {}
 
-    explicit Connection(ConnectionType type, std::string id, Socket socket): _id(std::move(id)), type(type) {
+    explicit Connection(ConnectionType type, std::string id, Socket socket): _id(std::move(id)), type(type), security(UNSECURE) {
         this->socket = socket;
         fcntl(socket.id, F_SETFL, O_NONBLOCK);
         alive = true;
@@ -41,6 +47,7 @@ public:
     }
 
     ConnectionType type;
+    ConnectionSecurity security;
 
     enum {
         KEEP_ALIVE,
@@ -53,8 +60,14 @@ public:
     int active_requests;
     std::chrono::high_resolution_clock::time_point last_read;
 
-private:
+    const SSL_METHOD *ssl_method;
+    SSL_CTX *ssl_context;
+    SSL *ssl;
+
     std::string _id;
+
+private:
+
 };
 
 

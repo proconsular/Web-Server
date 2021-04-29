@@ -61,9 +61,9 @@ public:
     struct sockaddr_un unix_address;
 
     int id;
-
-private:
     int _port;
+private:
+
 };
 
 #endif //P8_WEB_SERVER_SOCKET_H

@@ -6,8 +6,9 @@
 
 void SendResponsesTask::perform() {
     for (const auto& envelope: state->outbound_http_response_queue) {
+        envelope.response->headers["Access-Control-Allow-Origin"] = std::make_shared<std::string>("*");
         auto response = envelope.response->generate();
-        envelope.connection->socket.write(response);
+        envelope.connection->write(response);
         if (envelope.connection->persistence == Connection::CLOSE) {
             envelope.connection->terminate();
         }

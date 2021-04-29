@@ -5,6 +5,9 @@
 #include "utils.h"
 #include <math.h>
 #include <map>
+#include <algorithm>
+#include <openssl/ssl.h>
+#include <openssl/err.h>
 
 std::vector<std::string> split_string(const std::string& separator, const std::string& str) {
     std::vector<std::string> parts;
@@ -171,4 +174,55 @@ std::vector<std::string> parse_accept_header(const std::string& header) {
     }
 
     return list;
+}
+
+bool compare_routes(const std::string& a, const std::string& b) {
+    uint8_t score[2] = {0, 0};
+    std::string routes[2] = {a, b};
+    for (int i = 0; i < 2; i++) {
+        auto url = routes[i];
+        for (int k = 0; k < url.size(); k++) {
+            char c = url[k];
+            if (c == '*') {
+                score[i] += 1;
+            } else if (c == '/') {
+                score[i] += 2;
+            } else {
+                int j = k;
+                while (k < url.size() && url[k] != '*' && url[k] != '/') k++;
+                if (j < k) {
+                    score[i] += 3;
+                }
+                if (k < url.size()) {
+                    k--;
+                }
+            }
+        }
+    }
+    return score[0] < score[1];
+}
+
+bool route_applies(const std::string& route, const std::string& url) {
+    int i = 0;
+    for (; i < route.size() && i < url.size(); i++) {
+        char r = route[i];
+        char u = url[i];
+        if (r != u) {
+            if (r != '*') {
+                return false;
+            }
+            return true;
+        }
+    }
+    return i == url.size() && route.size() <= url.size();
+}
+
+std::string get_ssl_str_err() {
+    BIO *bio = BIO_new(BIO_s_mem());
+    ERR_print_errors(bio);
+    char *buf;
+    size_t len = BIO_get_mem_data(bio, &buf);
+    std::string ret(buf, len);
+    BIO_free(bio);
+    return ret;
 }

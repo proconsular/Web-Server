@@ -26,6 +26,8 @@ private:
 
     static Socket create_ip_socket(const std::shared_ptr<HTTPRequestCarrier>&);
     static Socket create_unix_socket(const std::shared_ptr<HTTPRequestCarrier>&);
+
+    bool initialize_tls(std::shared_ptr<Connection>&);
 };
 
 

@@ -4,16 +4,11 @@
 
 #include "initialize_server_task.h"
 
-#include <unistd.h>
-#include <sys/socket.h>
-#include <sys/types.h>
-#include <stdlib.h>
-#include <netinet/in.h>
-#include <string>
-#include <vector>
+#include <cstdlib>
 #include <fcntl.h>
 #include <memory>
 #include "utils.h"
+#include <openssl/ssl.h>
 
 void InitializeServerTask::perform() {
     auto sock = std::make_shared<Socket>();

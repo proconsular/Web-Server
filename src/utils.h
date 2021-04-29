@@ -11,6 +11,7 @@
 #include <string>
 #include <stdexcept>
 #include <chrono>
+#include "objects/route.h"
 
 std::vector<std::string> split_string(const std::string& separator, const std::string& str);
 std::string join(const std::string& separator, const std::vector<std::string>& arr);
@@ -35,5 +36,11 @@ uint32_t get_millisecond_duration(std::chrono::high_resolution_clock::time_point
 uint32_t get_ms_to_now(std::chrono::high_resolution_clock::time_point t);
 
 std::vector<std::string> parse_accept_header(const std::string& header);
+
+bool compare_routes(const std::string& a, const std::string& b);
+
+bool route_applies(const std::string&, const std::string&);
+
+std::string get_ssl_str_err();
 
 #endif //P8_WEB_SERVER_UTILS_H

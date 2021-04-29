@@ -21,6 +21,7 @@ enum Actions {
     ModifyClientConnection,
     RemoveClientConnection,
     CreateServerSocket,
+    CreateTLSServerSocket,
     SetConfiguration,
     CreateClientRequest,
     ModifyClientRequest,
