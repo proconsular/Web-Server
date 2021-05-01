@@ -61,12 +61,12 @@ void InitializeTLSServerSocketTask::perform() {
 
     SSL_CTX_set_ecdh_auto(context, 1);
 
-    if (SSL_CTX_use_certificate_file(context, "server.cert", SSL_FILETYPE_PEM) <= 0) {
+    if (SSL_CTX_use_certificate_file(context, "debug/server.cert", SSL_FILETYPE_PEM) <= 0) {
         ERR_print_errors_fp(stderr);
         ok = false;
     }
 
-    if (SSL_CTX_use_PrivateKey_file(context, "server.key", SSL_FILETYPE_PEM) <= 0) {
+    if (SSL_CTX_use_PrivateKey_file(context, "debug/server.key", SSL_FILETYPE_PEM) <= 0) {
         ERR_print_errors_fp(stderr);
         ok = false;
     }

@@ -73,7 +73,7 @@ void InitializeHTTPRequestConnectionsTask::perform() {
                 _carrier->status = CONNECTED;
             } else {
                 _carrier->status = FAILED;
-                if (connection->socket.id >= 0) {
+                if (connection != nullptr && connection->socket.id >= 0) {
                     close(connection->socket.id);
                 }
             }

@@ -14,6 +14,7 @@ RUN make
 RUN make test
 RUN make install
 RUN export PATH="/usr/local/ssl/bin:${PATH}"
+RUN apt-get -y install git
 
 WORKDIR /app
 
@@ -25,10 +26,11 @@ COPY CMakeLists.txt .
 COPY main.cpp .
 COPY http_client.cpp .
 COPY config.json .
+COPY keys ./keys
 
 RUN cmake .
 RUN cmake --build .
 
-EXPOSE 8001
+EXPOSE 8001 443
 
 CMD ["./P8_Web_Server_run"]

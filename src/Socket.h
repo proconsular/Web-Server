@@ -61,7 +61,7 @@ public:
     struct sockaddr_un unix_address;
 
     int id;
-    int _port;
+    uint16_t _port;
 private:
 
 };

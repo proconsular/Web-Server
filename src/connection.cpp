@@ -34,9 +34,9 @@ bool Connection::write(const std::shared_ptr<std::string>& input) const {
             amount_written = SSL_write(ssl, buffer, size);
             if (amount_written < 0) {
                 int err = SSL_get_error(ssl, amount_written);
-                if (last_err != err) {
-                    std::cerr << "write err: " << err << std::endl;
-                }
+//                if (last_err != err) {
+//                    std::cerr << "write err: " << err << std::endl;
+//                }
                 last_err = err;
                 if (err == SSL_ERROR_WANT_WRITE) {
                     std::this_thread::sleep_for(std::chrono::milliseconds(1));
