@@ -65,29 +65,6 @@ TEST(HttpServerTests, Basic_Not_Found) {
     ASSERT_EQ("", *response->body);
 }
 
-TEST(HttpServerTests, Basic_Not_Supported) {
-    DockerInterfaceApp docker;
-
-    const std::string host = string_format("http://localhost:%s", port.c_str());
-
-    std::string id;
-    ASSERT_TRUE(docker.create_container(id, "p8_web_server_test", "8001", port));
-    ASSERT_TRUE(docker.start_container(id));
-    ASSERT_TRUE(docker.wait_for_container_status(id, "running"));
-
-    HttpClientApp http;
-    auto request = HttpMessage::make_request("POST", "/");
-    std::shared_ptr<HttpMessage> response;
-    bool received = http.send(host, request, response);
-
-    docker.remove_container_forced(id);
-
-    ASSERT_TRUE(received);
-
-    ASSERT_EQ(501, response->code);
-    ASSERT_EQ("Not Implemented", response->status);
-}
-
 TEST(HttpServerTests, Basic_Bad_Request) {
     FILE *big_file = fopen("../../web/big_file.txt", "r");
     char *buffer = new char[150000];
@@ -119,6 +96,71 @@ TEST(HttpServerTests, Basic_Bad_Request) {
     ASSERT_TRUE(received);
     ASSERT_EQ(400, response->code);
     ASSERT_EQ("Bad Request", response->status);
+}
+
+TEST(HttpServerTests, Resilience_Random_Data) {
+    DockerInterfaceApp docker;
+
+    const std::string host = string_format("http://localhost:%s", port.c_str());
+
+    std::string id;
+    ASSERT_TRUE(docker.create_container(id, "p8_web_server_test", "8001", port));
+    ASSERT_TRUE(docker.start_container(id));
+    ASSERT_TRUE(docker.wait_for_container_status(id, "running"));
+
+    std::vector<std::string> requests = {
+            "wefw wfwef fwef fwef",
+            "qwefqwefojqwpeofjqpowejfpojwefpojweopfqjwpoefj",
+            "fwe",
+            "efw fwef",
+            "e g e",
+            "fefw ef fwe\r \n",
+            "fwe\r\n",
+            "fwe fwe fwe\r\r",
+            "fwe fwe wef\r\r\r\r\r\r\r\nfwefweff pfkpwe\r\n\r\n\r\n",
+            "\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r",
+            "ewf fwef fwefw\r\r\r\r\r\r\r\r\r\r\r\r",
+            "fwefw wefw fwef \r\n\r\n\r\n",
+            "wef wfwe wfewe\r\n\n",
+            "wefw fwef fwefw\r\n\r\n",
+            "wefw fwe fwef\r\nfwefwefoqwepfjo: fwepofk\r\n\r\n",
+            "wefw fwe fwef\r\nfwefwefoqwepfjo: fwepofk\r\n",
+            "fwef        fwefwe          fwefwe     \r\n",
+            "wefw fwe fwef\r\nfwefwefoqwepfjo: fwepofk\r\r\r\n",
+    };
+
+    int i = 0;
+
+    while (i < requests.size()) {
+        int sock = socket(AF_INET, SOCK_STREAM, 0);
+
+        sockaddr_in address{};
+        address.sin_addr.s_addr = inet_addr("127.0.0.1");
+        address.sin_port = htons(atoi(port.c_str()));
+
+        ASSERT_TRUE(connect(sock, (sockaddr *)&address, sizeof(address)) == 0);
+
+        const char* buffer = requests[i].c_str();
+        write(sock, buffer, strlen(buffer));
+
+        std::string message;
+
+        auto start = get_time();
+        while (get_ms_to_now(start) <= 2000) {
+            char read_buffer[1024] = {0};
+            int amount = read(sock, read_buffer, 1024);
+            if (amount > 0) {
+                message += std::string(read_buffer, amount);
+                break;
+            }
+        }
+
+        ASSERT_EQ("HTTP/1.1 400 Bad Request\r\n", message.substr(0, 26));
+
+        i++;
+    }
+
+    docker.remove_container_forced(id);
 }
 
 TEST(HttpServerTests, Reliability_Request) {

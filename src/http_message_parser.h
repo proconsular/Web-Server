@@ -89,6 +89,9 @@ private:
             words.push_back(word);
         }
 
+        if (words.size() != 3)
+            return -1;
+
         request->method = words[0];
         request->url = URL::parse(words[1]);
         request->version = words[2];

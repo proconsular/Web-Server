@@ -31,6 +31,12 @@ void ProcessHTTPRequestsTask::perform() {
                 client_request->http_request = request;
             }
         }
+
+        if (client_request->type == BadRequest) {
+            client_request->connection->persistence = Connection::CLOSE;
+            client_request->status = Complete;
+        }
+
         _controller->apply(Action(CreateClientRequest, client_request));
     }
     _controller->apply(Action(ClearHttpRequests));

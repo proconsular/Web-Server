@@ -32,7 +32,7 @@ enum RequestStatus {
 class ClientRequest: public Identifiable {
 public:
     explicit ClientRequest():
-        type(Requests::Unsupported),
+        type(Requests::BadRequest),
         status(RequestStatus::New),
         data(nullptr),
         connection(nullptr) {

@@ -39,7 +39,7 @@ void FinalizeClientRequestsTask::perform() {
                         break;
                 }
                 _controller->apply(Action(CreateHttpResponse, std::make_shared<HTTPResponseEnvelope>(request->connection, response)));
-                break;
+                continue;
             }
             case Failed: {
                 auto response = std::make_shared<HttpMessage>(RESPONSE);
@@ -58,19 +58,7 @@ void FinalizeClientRequestsTask::perform() {
                         break;
                 }
                 _controller->apply(Action(CreateHttpResponse, std::make_shared<HTTPResponseEnvelope>(request->connection, response)));
-                break;
-            }
-            case New: {
-                if (request->type == Unsupported) {
-                    auto response = std::make_shared<HttpMessage>(RESPONSE);
-                    response->code = 501;
-                    response->version = "HTTP/1.1";
-                    response->status = "Not Implemented";
-                    response->headers["Content-Length"] = std::make_shared<std::string>("0");
-                    response->body = std::make_shared<std::string>("");
-                    _controller->apply(Action(CreateHttpResponse, std::make_shared<HTTPResponseEnvelope>(request->connection, response)));
-                }
-                break;
+                continue;
             }
             default:
                 break;

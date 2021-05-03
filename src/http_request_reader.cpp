@@ -43,7 +43,6 @@ int HttpRequestReader::read(const std::shared_ptr<Connection> &connection) {
         return -1;
     }
 
-
     _parser.finalize();
     return 1;
 }
