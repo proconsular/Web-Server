@@ -68,7 +68,8 @@ void LogActionReceiver::receive(const Action &action) {
             auto request = std::static_pointer_cast<ClientRequest>(action.data);
             std::map<Requests, std::string> table = {
                     {Unsupported, "Unsupported"},
-                    {RetrieveFile, "Retrieve File"}
+                    {RetrieveFile, "Retrieve File"},
+                    {BadRequest, "Bad Request"},
             };
             output.append(string_format("CREATED: request: %s for %s: %s", request->id().c_str(), request->connection->id().c_str(), table[request->type].c_str()));
             break;

@@ -26,6 +26,13 @@ void FinalizeClientRequestsTask::perform() {
                         }
                         break;
                     }
+                    case BadRequest: {
+                        response->body = std::make_shared<std::string>("");
+                        response->code = 400;
+                        response->status = "Bad Request";
+                        response->headers["Content-Length"] = std::make_shared<std::string>("0");
+                        break;
+                    }
                     default:
                         response->status = "Not Implemented";
                         response->code = 501;
@@ -43,6 +50,8 @@ void FinalizeClientRequestsTask::perform() {
                     case RetrieveFile: {
                         response->code = 404;
                         response->status = "Not Found";
+                        response->body = std::make_shared<std::string>("");
+                        response->headers["Content-Length"] = std::make_shared<std::string>("0");
                         break;
                     }
                     default:
@@ -57,6 +66,8 @@ void FinalizeClientRequestsTask::perform() {
                     response->code = 501;
                     response->version = "HTTP/1.1";
                     response->status = "Not Implemented";
+                    response->headers["Content-Length"] = std::make_shared<std::string>("0");
+                    response->body = std::make_shared<std::string>("");
                     _controller->apply(Action(CreateHttpResponse, std::make_shared<HTTPResponseEnvelope>(request->connection, response)));
                 }
                 break;

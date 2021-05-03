@@ -23,9 +23,10 @@ public:
         message = std::make_shared<HttpMessage>(type);
         built_up_message = std::make_shared<std::string>();
         built_up_body = std::make_shared<std::string>();
+        _error = false;
     }
 
-    bool partial_parse(const char* buffer, size_t amount);
+    bool parse(const char* buffer, size_t amount);
 
     [[nodiscard]] std::shared_ptr<HttpMessage> get_message() const {
         return message;
@@ -37,7 +38,13 @@ public:
         }
     }
 
+    bool error() const {
+        return _error;
+    }
+
 private:
+    bool _error;
+
     HttpMessageType type;
 
     std::shared_ptr<HttpMessage> message;
@@ -70,6 +77,12 @@ private:
                 words.push_back(word);
                 word = "";
             }
+            if (words.empty() && word.size() > 10)
+                return -1;
+            if (words.size() == 1 && word.size() > 512)
+                return -1;
+            if (words.size() == 2 && word.size() > 8)
+                return -1;
         }
 
         if (words.size() == 2 && !word.empty()) {
@@ -113,17 +126,23 @@ private:
     static int parse_header(T start, T end, const std::shared_ptr<HttpMessage>& response) {
         auto cursor = start;
         auto beginning = cursor;
-        while (cursor != end && *cursor != ':') cursor++;
+        while (cursor != end && (cursor - beginning) < 30 && *cursor != ':') cursor++;
         if (cursor == end) {
             return -1;
         }
+        if (*cursor != ':')
+            return -2;
         auto key = std::string(beginning, cursor);
         beginning = cursor + 1;
-        while (isspace(*beginning)) beginning++;
-        while (cursor != end && *cursor != '\0' && *cursor != '\r' && *cursor != '\n') cursor++;
+        while (isspace(*beginning) && (cursor - beginning) < 10) beginning++;
+        if (cursor - beginning >= 10)
+            return -2;
+        while (cursor != end && (cursor - beginning) < 1024 && *cursor != '\0' && *cursor != '\r' && *cursor != '\n') cursor++;
         if (cursor == end || *cursor == '\0') {
             return -1;
         }
+        if (cursor - beginning >= 1024)
+            return -2;
         response->headers[key] = std::make_shared<std::string>(beginning, cursor);
         if ((*cursor == '\n' && cursor + 1 < end) || (*cursor == '\r' && cursor + 2 < end)) {
             cursor += *cursor == '\n' ? 1 : 2;
@@ -134,7 +153,6 @@ private:
     }
 
     static int parse_chunk_header(const std::shared_ptr<std::string>&, int, int&);
-    static int parse_chunk(const std::shared_ptr<std::string>&, int, int, const std::shared_ptr<HttpMessage>&);
 };
 
 

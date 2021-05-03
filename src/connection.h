@@ -51,7 +51,7 @@ public:
 
     enum {
         KEEP_ALIVE,
-        CLOSE
+        CLOSE,
     } persistence;
 
     Socket socket;

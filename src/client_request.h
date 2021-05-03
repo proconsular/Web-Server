@@ -17,6 +17,7 @@
 
 enum Requests {
     Unsupported,
+    BadRequest,
     RetrieveFile,
     ResolveRoute,
 };

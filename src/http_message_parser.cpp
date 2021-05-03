@@ -5,7 +5,7 @@
 #include "http_message_parser.h"
 #include "utils.h"
 
-bool HttpMessageParser::partial_parse(const char *buffer, size_t amount) {
+bool HttpMessageParser::parse(const char *buffer, size_t amount) {
     if (done) {
         return false;
     }
@@ -16,15 +16,25 @@ bool HttpMessageParser::partial_parse(const char *buffer, size_t amount) {
         switch (mode) {
             case STATUS: {
                 if (type == REQUEST) {
-                    cursor += parse_request_status_line(built_up_message->begin(), built_up_message->end(), message);
+                    int length =  parse_request_status_line(built_up_message->begin(), built_up_message->end(), message);
+                    if (length == -1) {
+                        _error = true;
+                        return false;
+                    }
+                    cursor += length;
                 } else {
                     cursor += parse_response_status_line(built_up_message->begin(), built_up_message->end(), message);
+                }
+                if (cursor < built_up_message->size() && built_up_message->at(cursor) == '\r') {
+                    return false;
                 }
                 mode = HEADERS;
                 break;
             }
             case HEADERS: {
                 bool ok = parse_headers();
+                if (_error)
+                    return false;
                 if (!ok)
                     return true;
                 break;
@@ -48,6 +58,10 @@ bool HttpMessageParser::partial_parse(const char *buffer, size_t amount) {
 
 bool HttpMessageParser::parse_headers() {
     int length = parse_header(built_up_message->begin() + cursor, built_up_message->end(), message);
+    if (length == -2) {
+        _error = true;
+        return false;
+    }
     if (length == -1) {
         return false;
     }
@@ -100,12 +114,4 @@ int HttpMessageParser::parse_chunk_header(const std::shared_ptr<std::string>& st
         return -1;
     size = decode_hex_str(std::string(str->begin() + start, str->begin() + end));
     return end - start + 2;
-}
-
-int HttpMessageParser::parse_chunk(const std::shared_ptr<std::string>& str, int start, int size, const std::shared_ptr<HttpMessage>& response) {
-    if (response->body == nullptr) {
-        response->body = std::make_shared<std::string>();
-    }
-    response->body->append(std::string(str->begin() + start, str->begin() + start + size));
-    return start + size + 2;
 }

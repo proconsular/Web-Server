@@ -2,8 +2,10 @@
 // Created by Chris Luttio on 3/25/21.
 //
 
+#include <constants.h>
 #include "receive_requests_task.h"
 #include "http_message_parser.h"
+#include "http_request_reader.h"
 
 void ReceiveRequestsTask::perform() {
     for (const auto& pair : state->connections) {
@@ -12,42 +14,23 @@ void ReceiveRequestsTask::perform() {
             continue;
         int error = connection->socket.get_error();
         if (error == 0) {
-            auto input = std::make_shared<std::string>();
-
-            const int buffer_size = 10 * 1024;
-
-            auto last_read = get_time();
-
-            HttpMessageParser parser(REQUEST);
-
-            bool still_reading = false;
-            bool read_any = false;
-
-            int data_read;
-            do {
-                char *buffer = new char[buffer_size];
-
-                if (connection->security == UNSECURE) {
-                    data_read = read(connection->socket.id, buffer, buffer_size);
-                } else {
-                    data_read = SSL_read(connection->ssl, buffer, buffer_size);
-                }
-
-                if (data_read > 0) {
-                    last_read = get_time();
-                    still_reading = parser.partial_parse(buffer, data_read);
-                    read_any = true;
-                }
-
-                delete[] buffer;
-            } while (get_ms_to_now(last_read) <= 1000 && still_reading);
-
-            if (read_any) {
-                parser.finalize();
+            HttpRequestReader reader(10 * KB);
+            int result = reader.read(connection);
+            if (result != 0) {
                 connection->active_requests++;
                 connection->last_read = std::chrono::high_resolution_clock::now();
+                if (result == 1) {
+                    _controller->apply(Action(CreateHttpRequest, std::make_shared<HTTPRequestEnvelope>(connection, reader.get_message())));
+                } else {
+                    auto client_request = std::make_shared<ClientRequest>();
+                    client_request->connection = connection;
+                    client_request->type = BadRequest;
+                    client_request->status = Complete;
+                    connection->persistence = Connection::CLOSE;
+
+                    _controller->apply(Action(CreateClientRequest, client_request));
+                }
                 _controller->apply(Action(ModifyClientConnection, connection));
-                _controller->apply(Action(CreateHttpRequest, std::make_shared<HTTPRequestEnvelope>(connection, parser.get_message())));
             }
         } else {
             connection->terminate();

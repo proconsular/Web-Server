@@ -10,7 +10,7 @@ TEST(secure_http_server_tests, Basic_OK) {
     DockerInterfaceApp docker;
 
     std::string id;
-    ASSERT_TRUE(docker.create_container(id, "p8_web_server", "443", "443"));
+    ASSERT_TRUE(docker.create_container(id, "p8_web_server_test", "443", "443"));
     ASSERT_TRUE(docker.start_container(id));
     ASSERT_TRUE(docker.wait_for_container_status(id, "running"));
 
@@ -34,7 +34,7 @@ TEST(secure_http_server_tests, Reliability_Server_OK) {
     const std::string host = string_format("https://localhost");
 
     std::string id;
-    ASSERT_TRUE(docker.create_container(id, "p8_web_server", "443", "443"));
+    ASSERT_TRUE(docker.create_container(id, "p8_web_server_test", "443", "443"));
     ASSERT_TRUE(docker.start_container(id));
     ASSERT_TRUE(docker.wait_for_container_status(id, "running"));
 
@@ -74,7 +74,7 @@ TEST(secure_http_server_tests, Reliability_Server_Rounds_90KB_File) {
     const std::string host = string_format("https://localhost");
 
     std::string id;
-    ASSERT_TRUE(docker.create_container(id, "p8_web_server", "443", "443"));
+    ASSERT_TRUE(docker.create_container(id, "p8_web_server_test", "443", "443"));
     ASSERT_TRUE(docker.start_container(id));
     ASSERT_TRUE(docker.wait_for_container_status(id, "running"));
 

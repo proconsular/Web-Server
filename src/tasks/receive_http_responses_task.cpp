@@ -46,7 +46,7 @@ void ReceiveHTTPResponsesTask::perform() {
                 if (amount > 0) {
                     was_read_time = get_time();
                     did_read_any = true;
-                    if (!parser.partial_parse(buffer, amount)) {
+                    if (!parser.parse(buffer, amount)) {
                         carrier->status = FULFILLED;
                         delete[] buffer;
                         break;
