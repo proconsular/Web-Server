@@ -21,6 +21,7 @@ public:
     State() {
         scheduler = std::make_shared<TaskScheduler>();
         config = std::make_shared<Configuration>();
+        ssl_enabled = false;
     }
 
     const SSL_METHOD *ssl_method;
@@ -42,6 +43,8 @@ public:
     std::shared_ptr<Configuration> config;
 
     std::vector<Route> routes;
+
+    bool ssl_enabled;
 };
 
 

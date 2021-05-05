@@ -104,7 +104,6 @@ bool HttpMessageParser::parse_chunked_body() {
     return true;
 }
 
-
 int HttpMessageParser::parse_chunk_header(const std::shared_ptr<std::string>& str, int start, int &size) {
     auto end = start;
     while (end < str->size() && str->at(end) != '\r' && str->at(end) != '\0') end++;

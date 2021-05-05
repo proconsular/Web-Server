@@ -35,6 +35,9 @@ void LoadConfigurationTask::perform() {
         if (config.find("routes") != config.end()) {
             new_config->routing_directory = config["routes"];
         }
+        if (config.find("domain") != config.end()) {
+            new_config->domain = config["domain"];
+        }
         new_config->from_file = filename;
         _controller->apply(Action(SetConfiguration, new_config));
     }

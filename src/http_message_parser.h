@@ -135,9 +135,13 @@ private:
         }
         if (*cursor != ':')
             return -2;
+        if (beginning >= cursor)
+            return -2;
         auto key = std::string(beginning, cursor);
+        if (cursor + 1 == end)
+            return -1;
         beginning = cursor + 1;
-        while (isspace(*beginning) && (cursor - beginning) < 10) beginning++;
+        while (beginning != end && isspace(*beginning) && (cursor - beginning) < 10) beginning++;
         if (cursor - beginning >= 10)
             return -2;
         while (cursor != end && (cursor - beginning) < 1024 && *cursor != '\0' && *cursor != '\r' && *cursor != '\n') cursor++;
@@ -146,8 +150,10 @@ private:
         }
         if (cursor - beginning >= 1024)
             return -2;
+        if (beginning >= cursor)
+            return -2;
         response->headers[key] = std::make_shared<std::string>(beginning, cursor);
-        if ((*cursor == '\n' && cursor + 1 < end) || (*cursor == '\r' && cursor + 2 < end)) {
+        if (cursor != end && ((*cursor == '\n' && cursor + 1 < end) || (*cursor == '\r' && cursor + 2 < end))) {
             cursor += *cursor == '\n' ? 1 : 2;
         } else {
             return -1;

@@ -14,22 +14,20 @@
 
 using json = nlohmann::json;
 
-const std::string port = "3000";
+const std::string port = "443";
 
 TEST(HttpServerTests, Basic_Helloworld) {
     DockerInterfaceApp docker;
 
-    const std::string host = string_format("http://localhost:%s", port.c_str());
-
     std::string id;
-    ASSERT_TRUE(docker.create_container(id, "p8_web_server_test", "8001", port));
+    ASSERT_TRUE(docker.create_container(id, "p8_web_server_test", "443", "443"));
     ASSERT_TRUE(docker.start_container(id));
     ASSERT_TRUE(docker.wait_for_container_status(id, "running"));
 
     HttpClientApp http;
     auto request = HttpMessage::make_request("GET", "/hello.txt");
     std::shared_ptr<HttpMessage> response;
-    bool received = http.send(host, request, response);
+    bool received = http.send("https://localhost", request, response);
 
     docker.remove_container_forced(id);
 
@@ -43,17 +41,15 @@ TEST(HttpServerTests, Basic_Helloworld) {
 TEST(HttpServerTests, Basic_Not_Found) {
     DockerInterfaceApp docker;
 
-    const std::string host = string_format("http://localhost:%s", port.c_str());
-
     std::string id;
-    ASSERT_TRUE(docker.create_container(id, "p8_web_server_test", "8001", port));
+    ASSERT_TRUE(docker.create_container(id, "p8_web_server_test", "443", "443"));
     ASSERT_TRUE(docker.start_container(id));
     ASSERT_TRUE(docker.wait_for_container_status(id, "running"));
 
     HttpClientApp http;
     auto request = HttpMessage::make_request("GET", "/random");
     std::shared_ptr<HttpMessage> response;
-    bool received = http.send(host, request, response);
+    bool received = http.send("https://localhost", request, response);
 
     docker.remove_container_forced(id);
 
@@ -78,10 +74,8 @@ TEST(HttpServerTests, Basic_Bad_Request) {
 
     DockerInterfaceApp docker;
 
-    const std::string host = string_format("http://localhost:%s", port.c_str());
-
     std::string id;
-    ASSERT_TRUE(docker.create_container(id, "p8_web_server_test", "8001", port));
+    ASSERT_TRUE(docker.create_container(id, "p8_web_server_test", "443", port));
     ASSERT_TRUE(docker.start_container(id));
     ASSERT_TRUE(docker.wait_for_container_status(id, "running"));
 
@@ -89,7 +83,7 @@ TEST(HttpServerTests, Basic_Bad_Request) {
     auto request = HttpMessage::make_request("GET", "/big_file.txt");
     request->body = data;
     std::shared_ptr<HttpMessage> response;
-    bool received = http.send(host, request, response);
+    bool received = http.send("https://localhost", request, response);
 
     docker.remove_container_forced(id);
 
@@ -99,12 +93,14 @@ TEST(HttpServerTests, Basic_Bad_Request) {
 }
 
 TEST(HttpServerTests, Resilience_Random_Data) {
+    SSL_library_init();
+    SSLeay_add_ssl_algorithms();
+    SSL_load_error_strings();
+
     DockerInterfaceApp docker;
 
-    const std::string host = string_format("http://localhost:%s", port.c_str());
-
     std::string id;
-    ASSERT_TRUE(docker.create_container(id, "p8_web_server_test", "8001", port));
+    ASSERT_TRUE(docker.create_container(id, "p8_web_server_test", "443", "443"));
     ASSERT_TRUE(docker.start_container(id));
     ASSERT_TRUE(docker.wait_for_container_status(id, "running"));
 
@@ -127,6 +123,11 @@ TEST(HttpServerTests, Resilience_Random_Data) {
             "wefw fwe fwef\r\nfwefwefoqwepfjo: fwepofk\r\n",
             "fwef        fwefwe          fwefwe     \r\n",
             "wefw fwe fwef\r\nfwefwefoqwepfjo: fwepofk\r\r\r\n",
+            "123 fe wef\r\n:\r\n",
+            "123 fe wef\r\n:\r",
+            "123 fe wef\r\n:",
+            "123 fe wef\r\n:e\r",
+            "123 fe wef\r\n::\r:"
     };
 
     int i = 0;
@@ -136,19 +137,28 @@ TEST(HttpServerTests, Resilience_Random_Data) {
 
         sockaddr_in address{};
         address.sin_addr.s_addr = inet_addr("127.0.0.1");
-        address.sin_port = htons(atoi(port.c_str()));
+        address.sin_port = htons(443);
 
         ASSERT_TRUE(connect(sock, (sockaddr *)&address, sizeof(address)) == 0);
 
+        const SSL_METHOD* method = TLS_client_method();
+        SSL_CTX* context = SSL_CTX_new(method);
+        SSL_CTX_set_mode(context, SSL_MODE_AUTO_RETRY);
+        SSL* ssl = SSL_new(context);
+
+        SSL_set_fd(ssl, sock);
+
+        SSL_connect(ssl);
+
         const char* buffer = requests[i].c_str();
-        write(sock, buffer, strlen(buffer));
+        SSL_write(ssl, buffer, strlen(buffer));
 
         std::string message;
 
         auto start = get_time();
         while (get_ms_to_now(start) <= 2000) {
             char read_buffer[1024] = {0};
-            int amount = read(sock, read_buffer, 1024);
+            int amount = SSL_read(ssl, read_buffer, 1024);
             if (amount > 0) {
                 message += std::string(read_buffer, amount);
                 break;
@@ -166,10 +176,8 @@ TEST(HttpServerTests, Resilience_Random_Data) {
 TEST(HttpServerTests, Reliability_Request) {
     DockerInterfaceApp docker;
 
-    const std::string host = string_format("http://localhost:%s", port.c_str());
-
     std::string id;
-    ASSERT_TRUE(docker.create_container(id, "p8_web_server_test", "8001", port));
+    ASSERT_TRUE(docker.create_container(id, "p8_web_server_test", "443", "443"));
     ASSERT_TRUE(docker.start_container(id));
 
     const int tries = 50;
@@ -193,10 +201,8 @@ TEST(HttpServerTests, Reliability_Request) {
 TEST(HttpServerTests, Reliability_Server_OK) {
     DockerInterfaceApp docker;
 
-    const std::string host = string_format("http://localhost:%s", port.c_str());
-
     std::string id;
-    ASSERT_TRUE(docker.create_container(id, "p8_web_server_test", "8001", port));
+    ASSERT_TRUE(docker.create_container(id, "p8_web_server_test", "443", "443"));
     ASSERT_TRUE(docker.start_container(id));
     ASSERT_TRUE(docker.wait_for_container_status(id, "running"));
 
@@ -208,7 +214,7 @@ TEST(HttpServerTests, Reliability_Server_OK) {
         HttpClientApp http;
         auto request = HttpMessage::make_request("GET", "/hello.txt");
         std::shared_ptr<HttpMessage> response;
-        bool received = http.send(host, request, response);
+        bool received = http.send("https://localhost", request, response);
         bool message_integrity = response->status == "OK" && response->code == 200 && *response->body == "hello world";
         if (received && message_integrity)
             passes++;
@@ -233,17 +239,15 @@ TEST(HttpServerTests, Reliability_Server_90KB_File) {
 
     DockerInterfaceApp docker;
 
-    const std::string host = string_format("http://localhost:%s", port.c_str());
-
     std::string id;
-    ASSERT_TRUE(docker.create_container(id, "p8_web_server_test", "8001", port));
+    ASSERT_TRUE(docker.create_container(id, "p8_web_server_test", "443", "443"));
     ASSERT_TRUE(docker.start_container(id));
     ASSERT_TRUE(docker.wait_for_container_status(id, "running"));
 
     HttpClientApp http;
     auto request = HttpMessage::make_request("GET", "/big_file.txt");
     std::shared_ptr<HttpMessage> response;
-    bool received = http.send(host, request, response);
+    bool received = http.send("https://localhost", request, response);
 
     docker.remove_container_forced(id);
 
@@ -268,10 +272,8 @@ TEST(HttpServerTests, Reliability_Server_Rounds_90KB_File) {
 
     DockerInterfaceApp docker;
 
-    const std::string host = string_format("http://localhost:%s", port.c_str());
-
     std::string id;
-    ASSERT_TRUE(docker.create_container(id, "p8_web_server_test", "8001", port));
+    ASSERT_TRUE(docker.create_container(id, "p8_web_server_test", "443", "443"));
     ASSERT_TRUE(docker.start_container(id));
     ASSERT_TRUE(docker.wait_for_container_status(id, "running"));
 
@@ -283,7 +285,7 @@ TEST(HttpServerTests, Reliability_Server_Rounds_90KB_File) {
         HttpClientApp http;
         auto request = HttpMessage::make_request("GET", "/big_file.txt");
         std::shared_ptr<HttpMessage> response;
-        bool received = http.send(host, request, response);
+        bool received = http.send("https://localhost", request, response);
         if (received && response->body != nullptr) {
             if (data == *response->body) {
                 passes++;
@@ -300,10 +302,8 @@ TEST(HttpServerTests, Reliability_Server_Rounds_90KB_File) {
 TEST(HttpServerTests, Performance_Basic_OK) {
     DockerInterfaceApp docker;
 
-    const std::string host = string_format("http://localhost:%s", port.c_str());
-
     std::string id;
-    ASSERT_TRUE(docker.create_container(id, "p8_web_server_test", "8001", port));
+    ASSERT_TRUE(docker.create_container(id, "p8_web_server_test", "443", "443"));
     ASSERT_TRUE(docker.start_container(id));
     ASSERT_TRUE(docker.wait_for_container_status(id, "running"));
 
@@ -318,7 +318,7 @@ TEST(HttpServerTests, Performance_Basic_OK) {
         auto request = HttpMessage::make_request("GET", "/hello.txt");
         std::shared_ptr<HttpMessage> response;
         auto start = get_time();
-        bool received = http.send(host, request, response);
+        bool received = http.send("https://localhost", request, response);
         auto end = get_time();
         if (received) {
             bool message_integrity = response->status == "OK" && response->code == 200;
@@ -336,16 +336,14 @@ TEST(HttpServerTests, Performance_Basic_OK) {
     docker.remove_container_forced(id);
 
     ASSERT_EQ(tries, passes);
-    ASSERT_GE(30, highest_duration);
+    ASSERT_GE(100, highest_duration);
 }
 
 TEST(HttpServerTests, Func_Connection_Header) {
     DockerInterfaceApp docker;
 
-    const std::string host = string_format("http://localhost:%s", port.c_str());
-
     std::string id;
-    ASSERT_TRUE(docker.create_container(id, "p8_web_server_test", "8001", port));
+    ASSERT_TRUE(docker.create_container(id, "p8_web_server_test", "443", "443"));
     ASSERT_TRUE(docker.start_container(id));
     ASSERT_TRUE(docker.wait_for_container_status(id, "running"));
 
@@ -359,7 +357,7 @@ TEST(HttpServerTests, Func_Connection_Header) {
         request->headers["Connection"] = std::make_shared<std::string>("keep-alive");
 
         std::shared_ptr<HttpMessage> response;
-        bool received = http.send(host, request, response);
+        bool received = http.send("https://localhost", request, response);
 
         ASSERT_TRUE(received);
         ASSERT_EQ(200, response->code);
@@ -374,10 +372,8 @@ TEST(HttpServerTests, Func_Connection_Header) {
 TEST(HttpServerTests, Func_Resend_Close_Connection_Header) {
     DockerInterfaceApp docker;
 
-    const std::string host = string_format("http://localhost:%s", port.c_str());
-
     std::string id;
-    ASSERT_TRUE(docker.create_container(id, "p8_web_server_test", "8001", port));
+    ASSERT_TRUE(docker.create_container(id, "p8_web_server_test", "443", "443"));
     ASSERT_TRUE(docker.start_container(id));
     ASSERT_TRUE(docker.wait_for_container_status(id, "running"));
 
@@ -387,7 +383,7 @@ TEST(HttpServerTests, Func_Resend_Close_Connection_Header) {
     request->headers["Connection"] = std::make_shared<std::string>("close");
 
     std::shared_ptr<HttpMessage> response;
-    bool received = http.send(host, request, response);
+    bool received = http.send("https://localhost", request, response);
 
     ASSERT_TRUE(received);
     ASSERT_EQ(200, response->code);
@@ -397,7 +393,7 @@ TEST(HttpServerTests, Func_Resend_Close_Connection_Header) {
     request2->headers["Connection"] = std::make_shared<std::string>("close");
 
     std::shared_ptr<HttpMessage> response2;
-    bool received2 = http.send(host, request2, response2);
+    bool received2 = http.send("https://localhost", request2, response2);
 
     ASSERT_TRUE(received2);
 
@@ -407,10 +403,8 @@ TEST(HttpServerTests, Func_Resend_Close_Connection_Header) {
 TEST(HttpServerTests, Func_Close_Connection_Header) {
     DockerInterfaceApp docker;
 
-    const std::string host = string_format("http://localhost:%s", port.c_str());
-
     std::string id;
-    ASSERT_TRUE(docker.create_container(id, "p8_web_server_test", "8001", port));
+    ASSERT_TRUE(docker.create_container(id, "p8_web_server_test", "443", "443"));
     ASSERT_TRUE(docker.start_container(id));
     ASSERT_TRUE(docker.wait_for_container_status(id, "running"));
 
@@ -421,7 +415,7 @@ TEST(HttpServerTests, Func_Close_Connection_Header) {
     request->headers["Connection"] = std::make_shared<std::string>("close");
 
     std::shared_ptr<HttpMessage> response;
-    bool received = http.send(host, request, response);
+    bool received = http.send("https://localhost", request, response);
 
     ASSERT_TRUE(received);
     ASSERT_EQ(200, response->code);
@@ -431,7 +425,7 @@ TEST(HttpServerTests, Func_Close_Connection_Header) {
     request2->headers["Connection"] = std::make_shared<std::string>("close");
 
     std::shared_ptr<HttpMessage> response2;
-    bool received2 = http.send(host, request2, response2);
+    bool received2 = http.send("https://localhost", request2, response2);
 
     ASSERT_FALSE(received2);
 

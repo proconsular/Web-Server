@@ -26,6 +26,8 @@ void TLSReceptionTask::perform() {
 
         if (ret < 0) {
             _controller->apply(Action(ReportError, std::make_shared<std::string>("SSL Accept failure")));
+            close(connection->socket.id);
+            SSL_free(ssl);
             continue;
         }
 

@@ -18,6 +18,7 @@ public:
         http_response_read_wait_ms = 10000;
         auto_reconnect_on_request_failure = true;
         auto_resend_on_request_failure = true;
+        domain = "localhost";
     }
 
     URL base_url;
@@ -33,6 +34,7 @@ public:
 
     std::string from_file;
     std::string routing_directory;
+    std::string domain;
 };
 
 #endif //P8_WEB_SERVER_CONFIGURATION_H

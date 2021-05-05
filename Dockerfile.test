@@ -25,7 +25,7 @@ COPY lib ./lib
 COPY CMakeLists.txt .
 COPY main.cpp .
 COPY http_client.cpp .
-COPY config.json .
+COPY config_test.json ./config.json
 COPY keys ./keys
 
 RUN cmake .

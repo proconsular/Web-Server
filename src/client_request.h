@@ -20,6 +20,7 @@ enum Requests {
     BadRequest,
     RetrieveFile,
     ResolveRoute,
+    RedirectSSL,
 };
 
 enum RequestStatus {

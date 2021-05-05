@@ -56,7 +56,7 @@ void LogActionReceiver::receive(const Action &action) {
         }
         case CreateClientConnection: {
             auto connection = std::static_pointer_cast<Connection>(action.data);
-            output.append(string_format("ESTABLISHED: client connection: %s", connection->id().c_str()));
+            output.append(string_format("ESTABLISHED: client connection: %s, secure: %s", connection->id().c_str(), connection->security == SECURE ? "yes" : "no"));
             break;
         }
         case RemoveClientConnection: {

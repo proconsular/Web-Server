@@ -19,16 +19,29 @@ void ReceiveRequestsTask::perform() {
             if (result != 0) {
                 connection->active_requests++;
                 connection->last_read = std::chrono::high_resolution_clock::now();
-                if (result == 1) {
-                    _controller->apply(Action(CreateHttpRequest, std::make_shared<HTTPRequestEnvelope>(connection, reader.get_message())));
-                } else {
+                if (connection->security == UNSECURE && state->ssl_enabled) {
                     auto client_request = std::make_shared<ClientRequest>();
                     client_request->connection = connection;
-                    client_request->type = BadRequest;
+                    client_request->type = RedirectSSL;
                     client_request->status = Complete;
+                    if (result == 1) {
+                        client_request->uri = reader.get_message()->url;
+                    }
                     connection->persistence = Connection::CLOSE;
 
                     _controller->apply(Action(CreateClientRequest, client_request));
+                } else {
+                    if (result == 1) {
+                        _controller->apply(Action(CreateHttpRequest, std::make_shared<HTTPRequestEnvelope>(connection, reader.get_message())));
+                    } else {
+                        auto client_request = std::make_shared<ClientRequest>();
+                        client_request->connection = connection;
+                        client_request->type = BadRequest;
+                        client_request->status = Complete;
+                        connection->persistence = Connection::CLOSE;
+
+                        _controller->apply(Action(CreateClientRequest, client_request));
+                    }
                 }
                 _controller->apply(Action(ModifyClientConnection, connection));
             }

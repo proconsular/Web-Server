@@ -76,6 +76,7 @@ void InitializeTLSServerSocketTask::perform() {
     } else {
         _state->ssl_method = method;
         _state->ssl_context = context;
+        _state->ssl_enabled = true;
 
         _controller->apply(Action(CreateTLSServerSocket, sock));
     }

@@ -33,6 +33,15 @@ void FinalizeClientRequestsTask::perform() {
                         response->headers["Content-Length"] = std::make_shared<std::string>("0");
                         break;
                     }
+                    case RedirectSSL: {
+                        response->body = std::make_shared<std::string>("");
+                        response->code = 301;
+                        response->status = "Moved Permanently";
+                        auto ext = request->uri.to_string();
+                        auto url = string_format("https://%s%s", state->config->domain.c_str(), ext.c_str());
+                        response->headers["Location"] = std::make_shared<std::string>(url);
+                        break;
+                    }
                     default:
                         response->status = "Not Implemented";
                         response->code = 501;
