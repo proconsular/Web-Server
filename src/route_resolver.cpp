@@ -16,6 +16,9 @@ void RouteResolver::resolve(const std::vector<Route> &routes, const std::string 
                     for (const auto & attribute : route.attributes) {
                         attributes[attribute.first] = attribute.second;
                     }
+                    if (!route.default_file.empty()) {
+                        url = route.default_file;
+                    }
                     break;
                 }
                 default:

@@ -21,6 +21,8 @@ void ProcessHTTPRequestsTask::perform() {
             }
         }
 
+        auto url = request->url.to_string();
+
         if (request->method == "GET") {
             if (state->routes.empty()) {
                 client_request->type = Requests::RetrieveFile;
@@ -29,6 +31,16 @@ void ProcessHTTPRequestsTask::perform() {
                 client_request->type = ResolveRoute;
                 client_request->uri = request->url;
                 client_request->http_request = request;
+            }
+        }
+
+        if (request->method == "POST") {
+            if (url == "/authorize") {
+                client_request->type = Authorize;
+                client_request->data = request->body;
+            } else if (url == "/authorize/refresh") {
+                client_request->type = Refresh;
+                client_request->data = request->body;
             }
         }
 

@@ -19,17 +19,13 @@ int main() {
     SSL_load_error_strings();
 
     HttpClientApp http;
-    http.enable_logging("log2.txt");
-//    http.state()->config->auto_reconnect_on_request_failure = false;
 
     auto request = HttpMessage::make_request("GET", "/");
 
     std::shared_ptr<HttpMessage> response;
     if (http.send("https://drade.io", request, response)) {
-        std::cout << *response->generate() << std::endl;
+        std::cout << response->status << std::endl;
     }
-
-//    int sock = socket()
 
     return 0;
 }

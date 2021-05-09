@@ -14,7 +14,8 @@ void ReceiveRequestsTask::perform() {
             continue;
         int error = connection->socket.get_error();
         if (error == 0) {
-            HttpRequestReader reader(10 * KB);
+            auto profile = state->get_access_profile();
+            HttpRequestReader reader(profile.request_size_limit);
             int result = reader.read(connection);
             if (result != 0) {
                 connection->active_requests++;

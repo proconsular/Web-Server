@@ -21,6 +21,9 @@ enum Requests {
     RetrieveFile,
     ResolveRoute,
     RedirectSSL,
+    Authorize,
+    Forbidden,
+    Refresh,
 };
 
 enum RequestStatus {

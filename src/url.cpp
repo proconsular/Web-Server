@@ -138,6 +138,14 @@ const char* URL::domain_to_cstr() const {
     return data;
 }
 
+const char* URL::get_path_url() const {
+    auto str = join("/", components);
+    str.insert(0, "/");
+    char *buffer = new char[str.size()];
+    memcpy(buffer, str.c_str(), str.size());
+    return buffer;
+}
+
 void URL::prepend(const std::string &str) {
     components.insert(components.begin(), str);
 }

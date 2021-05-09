@@ -3,5 +3,6 @@
   "port": 8001,
   "keep-alive": 60,
   "port_fixed": true,
-  "domain": "localhost"
+  "domain": "localhost",
+  "secret": "helloworld"
 }

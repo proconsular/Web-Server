@@ -42,6 +42,14 @@ void FinalizeClientRequestsTask::perform() {
                         response->headers["Location"] = std::make_shared<std::string>(url);
                         break;
                     }
+                    case Refresh:
+                    case Authorize: {
+                        response->body = request->data;
+                        response->code = 200;
+                        response->status = "OK";
+                        response->headers["Content-Type"] = std::make_shared<std::string>("application/json");
+                        break;
+                    }
                     default:
                         response->status = "Not Implemented";
                         response->code = 501;
@@ -62,6 +70,18 @@ void FinalizeClientRequestsTask::perform() {
                         response->body = std::make_shared<std::string>("");
                         response->headers["Content-Length"] = std::make_shared<std::string>("0");
                         break;
+                    }
+                    case Authorize: {
+                        response->code = 401;
+                        response->status = "Unauthorized";
+                        response->body = std::make_shared<std::string>("");
+                        response->headers["Content-Length"] = std::make_shared<std::string>("0");
+                    }
+                    case Forbidden: {
+                        response->code = 403;
+                        response->status = "Forbidden";
+                        response->body = std::make_shared<std::string>("");
+                        response->headers["Content-Length"] = std::make_shared<std::string>("0");
                     }
                     default:
                         break;

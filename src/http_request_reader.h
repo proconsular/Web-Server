@@ -11,7 +11,7 @@
 
 class HttpRequestReader {
 public:
-    explicit HttpRequestReader(int limit): _read_limit(limit), _parser(REQUEST) {}
+    explicit HttpRequestReader(int limit): _read_limit(limit), _parser(REQUEST), _read_limit_reached(false) {}
 
     int read(const std::shared_ptr<Connection>&);
 

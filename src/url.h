@@ -24,6 +24,7 @@ public:
     [[nodiscard]] std::string to_string() const;
 
     const char* domain_to_cstr() const;
+    const char* get_path_url() const;
 
     void prepend(const std::string&);
     void append(const std::string&);
