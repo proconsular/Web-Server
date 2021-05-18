@@ -43,4 +43,8 @@ bool route_applies(const std::string&, const std::string&);
 
 std::string get_ssl_str_err();
 
+std::string encode_base_64(const uint8_t *, size_t);
+
+uint32_t convert_from_big_endian(const char*, uint8_t);
+
 #endif //P8_WEB_SERVER_UTILS_H

@@ -17,6 +17,8 @@
 #include "objects/route.h"
 #include "objects/access_profile.h"
 #include "objects/user_account.h"
+#include "objects/web_socket_message.h"
+#include "objects/session.h"
 
 class State {
 public:
@@ -58,6 +60,11 @@ public:
     std::vector<std::shared_ptr<UserAccount>> accounts;
 
     std::string access_level;
+
+    std::vector<WebSocketMessage> inbound_web_socket_messages;
+    std::vector<WebSocketMessage> outbound_web_socket_messages;
+
+    std::map<std::string, std::shared_ptr<Session>> sessions;
 
     bool ssl_enabled;
 

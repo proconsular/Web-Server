@@ -10,7 +10,7 @@
 void ReceiveRequestsTask::perform() {
     for (const auto& pair : state->connections) {
         auto connection = std::make_shared<Connection>(*pair.second);
-        if (!connection->alive)
+        if (!connection->alive || connection->protocol != Http)
             continue;
         int error = connection->socket.get_error();
         if (error == 0) {

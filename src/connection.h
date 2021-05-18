@@ -17,16 +17,29 @@ enum ConnectionType {
     Client,
 };
 
+enum Protocol {
+    Http,
+    WebSocket,
+};
+
 enum ConnectionSecurity {
     UNSECURE,
     SECURE,
 };
 
+enum WebSocketState {
+    NONE,
+    CONNECTING,
+    OPEN,
+    CLOSING,
+    CLOSED
+};
+
 class Connection {
 public:
-    explicit Connection(): alive(true), active_requests(0), persistence(KEEP_ALIVE), security(UNSECURE) {}
+    explicit Connection(): alive(true), active_requests(0), persistence(KEEP_ALIVE), security(UNSECURE), protocol(Http), websocket_state(NONE) {}
 
-    explicit Connection(ConnectionType type, std::string id, Socket socket): _id(std::move(id)), type(type), security(UNSECURE) {
+    explicit Connection(ConnectionType type, std::string id, Socket socket): _id(std::move(id)), type(type), security(UNSECURE), protocol(Http), websocket_state(NONE) {
         this->socket = socket;
         fcntl(socket.id, F_SETFL, O_NONBLOCK);
         alive = true;
@@ -53,6 +66,10 @@ public:
         KEEP_ALIVE,
         CLOSE,
     } persistence;
+
+    WebSocketState websocket_state;
+
+    Protocol protocol;
 
     Socket socket;
     bool alive;

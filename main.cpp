@@ -16,6 +16,8 @@
 #include "tasks/load_routing_data_task.h"
 #include "tasks/tls_reception_task.h"
 #include "tasks/initialize_tls_server_socket_task.h"
+#include "tasks/send_web_socket_messages_task.h"
+#include "tasks/recieve_web_socket_messages_task.h"
 
 #include "controllers/direct_controller.h"
 #include "receivers/log_action_receiver.h"
@@ -44,6 +46,8 @@ int main() {
     state->scheduler->add(std::make_shared<InitializeHTTPRequestConnectionsTask>(state, controller));
     state->scheduler->add(std::make_shared<SendHTTPRequestsTask>(state, controller));
     state->scheduler->add(std::make_shared<ReceiveHTTPResponsesTask>(state, controller));
+    state->scheduler->add(std::make_shared<SendWebSocketMessagesTask>(state));
+    state->scheduler->add(std::make_shared<RecieveWebSocketMessagesTask>(state));
 
     state->scheduler->run();
 

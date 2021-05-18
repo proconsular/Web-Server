@@ -226,3 +226,54 @@ std::string get_ssl_str_err() {
     BIO_free(bio);
     return ret;
 }
+
+std::string encode_base_64(const uint8_t *str, size_t len) {
+    std::string output;
+
+    for (int i = 0; i < len; i += 3) {
+        uint8_t a = str[i];
+        uint8_t b = i + 1 < len ? str[i + 1] : 0;
+        uint8_t c = i + 2 < len ? str[i + 2] : 0;
+
+        uint8_t w = (a >> 2) & 0x3f;
+        uint8_t x = ((a & 0b11) << 4) | (b >> 4);
+        uint8_t y = ((b & 0b1111) << 2) | (c >> 6);
+        uint8_t z = c & 0b111111;
+
+        if (b == 0) {
+            y = 64;
+        }
+
+        if (c == 0) {
+            z = 64;
+        }
+
+        uint8_t buf[4] = {w, x, y, z};
+        for (int n = 0; n < 4; n++) {
+            uint8_t v = buf[n];
+            if (v < 26)
+                buf[n] = 'A' + v;
+            else if (v < 52)
+                buf[n] = 'a' + v - 26;
+            else if (v < 62)
+                buf[n] = '0' + v - 52;
+            else if (v == 62)
+                buf[n] = '+';
+            else if (v == 63)
+                buf[n] = '/';
+            else if (v == 64)
+                buf[n] = '=';
+            output.push_back((char)(buf[n]));
+        }
+    }
+
+    return output;
+}
+
+uint32_t convert_from_big_endian(const char* bytes, uint8_t len) {
+    uint32_t num = 0;
+    for (int i = 0; i < len; i++) {
+        num += bytes[len - i] * pow(255, i);
+    }
+    return num;
+}

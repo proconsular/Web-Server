@@ -50,6 +50,22 @@ void FinalizeClientRequestsTask::perform() {
                         response->headers["Content-Type"] = std::make_shared<std::string>("application/json");
                         break;
                     }
+                    case WebSocketUpgrade: {
+                        response->body = std::make_shared<std::string>("");
+                        response->code = 101;
+                        response->status = "Switching Protocols";
+                        response->headers["Connection"] = std::make_shared<std::string>("Upgrade");
+                        response->headers["Upgrade"] = std::make_shared<std::string>("websocket");
+                        response->headers["Sec-WebSocket-Accept"] = std::make_shared<std::string>(request->response_headers["Sec-WebSocket-Accept"]);
+                        request->connection->websocket_state = OPEN;
+                        break;
+                    }
+                    case Created: {
+                        response->body = request->data;
+                        response->code = 201;
+                        response->status = "Created";
+                        break;
+                    }
                     default:
                         response->status = "Not Implemented";
                         response->code = 501;

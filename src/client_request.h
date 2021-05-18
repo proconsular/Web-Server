@@ -24,6 +24,8 @@ enum Requests {
     Authorize,
     Forbidden,
     Refresh,
+    WebSocketUpgrade,
+    Created,
 };
 
 enum RequestStatus {
