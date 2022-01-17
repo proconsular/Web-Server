@@ -1,80 +1,27 @@
-# C++ Project Template
-When setting out on a new project in C++ there are a few configuration steps
-which need to be completed prior to actually getting down to writing code.
-This repository is going to be a C++ project template that already has the
-following components:
+# Web Server
 
-- Directory Structure
-- Make Build (CMake)
-- Unit Test Framework (Google Test)
-- API Documentation (Doxygen)
+## Overview
 
-Feel free to fork this repository and tailor it to suit you.
+A simple web server written in C++. It can serve files, and also be programmed with routes if desired. The design needs an overhaul but overall it works well for my first attempt.
 
-## Procedure
-1. Download Bash script to create new C++ projects 
-    ```bash
-    curl -O https://raw.githubusercontent.com/TimothyHelton/cpp_project_template/master/new_cpp_project.sh
-    chmod u+x new_cpp_project.sh
-    ```
-1. Create new C++ project
-    ```bash
-    ./new_cpp_project.sh NewProjectName
-    ```
-1. In the project top level **CMakeLists.txt**:
-    1. Line 2: Change the variable **MyProject** to the name of your project.
-        ```cmake
-        project(NewProject)
-        ```
-        - This variable will be used in a couple of different places.
-            - MyProject_run: will be the main executable name
-            - MyProject_lib: will be the project library name
-    1. Line 4: Set the version of C++ to use.  For example, let's set up the
-    NewProject to use C++ 11.
-        ```cmake
-        set(CMAKE_CXX_STANDARD 11)
-        ```
-1. Update project name and description in the `Doxyfile` located in the `docs`
-directory.
-    1. Update line `PROJECT_NAME`
-        1. This name will appear on each documentation page.
-    1. Update line `PROJECT_NUMBER`
-        1. This is the version number of your project.
-    1. Update line `PROJECT_BRIEF`
-        1. Any text entered here will also appear on each documentation page.
-        Try not to make this one too long.
-1. Reload the top CMake file.
+## Goal
 
-## CLION IDE Specific Instructions
-I started using an IDE from [JET Brains](https://www.jetbrains.com/) tailored
-for Python called [PyCharm](https://www.jetbrains.com/pycharm/) and thought
-it helped me write better code.
-I'd been wanting to learn C++ and decided to give JET Brains C/C++ IDE called
-[CLion](https://www.jetbrains.com/clion/) a try.
-The code completion, interactive suggestions, debugger, introspection tools,
-and built-in test execution are very handy.
-There are a couple extra details to set when using this IDE.
+My goal was to see if I could write my own rudimentary web server in C++ with minimal libraries or frameworks. 
 
-1. The IDE allows you to mark directories with their desired purpose.
-To mark a directory right click on the directory name in the `Project` window
-and select `Mark Directory as` from the drop-down menu.
-    1. Mark the `src` directory as `Project Sources and Headers`
-    1. Mark the `tests/lib/googletest` directory as  `Library Files`
-1. Setup the `Run/Debug Configuration` by selecting `Edit Configurations...`
-from the pull-down menu from the run button (green triangle) in the upper right
-corner.
-    1. Update Doxygen Build to execute the unit test suite.
-        1. Select Doxygen from the Application menu on the left.
-        1. Choose the **executable** for Doxygen to be `Unit_Tests_run`.
-    1. Create a `Google Test` configuration
-        1. In the upper left corner select the plus symbol.
-        1. Chose `Google Test` from the drop-down menu.
-        1. Set **Name** to `Unit Tests`.
-        1. Set **Target** to `Unit_Tests_run`.
+In order to achieve this, I wanted to keep the design a simple as possible. All the server needed to do was receive requests and return responses without crashing. After achieveing that, I could then easily add other features later.
 
-## Wrap Up
-That should be all it takes to start writing code.
-If you find any issues or bugs with this repository please file an issue on
-[GitHub](https://github.com/TimothyHelton/cpp_project_template/issues).
+## Technical Detail
 
-Hope you find this template useful and enjoy learning C++!
+### Overall Design
+
+The program comprises two main parts, the State and Tasks.
+The State is a single object that holds all the data of the program. The Tasks are what read and write to the State.
+In a sense, the Tasks are functions that transform the State. This makes it easy to add new tasks that add functionality.
+
+This might seem bad design, but I didn't see a reason to break up the State into smaller pieces since most tasks needed to use almost every part of the State. So breaking it up into smaller parts seemed like it would add unnecessary boilerplate that would end up making it confusing.
+
+Nevertheless, the State has several lists: connections, inbound_requests, outbound_responses, requests. Connections represents the clients currently connected to the server. inbound_requests represents HTTP requests received. outbound_responses represents HTTP responses ready to send. Requests represents parsed HTTP requests that are waiting to be processed.
+
+The way the server works is there are tasks that work on each of these lists sequentially. For instance, the Reception Task checks if there are any pending connections and adds them to the Connections list. The Receive Requests Tasks checks each Connection in the Connections list that is still active, and reads and parses any data into an HTTP request object and appends that to the inbound_requests list. Then the Initialize Client Request Task looks at each request in the inbound_requests list and determines what kinds of request it is and if the server can fulfill it, if not, it generates a bad request object, whatever the result, a client request object is made and put onto the requests list. Some tasks then fulfills this request and marks it done. The Finalize Request Task then checks each request and if they are done, generates a HTTP response object and places that on the outbound_responses list. Finally, the Send Responses Task generates a HTTP response for each object on the list and sends them to the client.
+
+The reason I like this design is that it is simple and extendable. There are obvious optimizations that could be made, namely, instead of having each task checking every object on the lists they are concerned with (eg. every request being checked if they are done), it could be better to have a separate list for each of their states. Also, after writing this program, I realized that a better way to handle the HTTP request -> Client Request -> HTTP response chain would be to have objects called say Processors, that would have a function called process, which would take a HTTP request and return HTTP response and they would be associated with a route, similar to how ExpressJS works. 
