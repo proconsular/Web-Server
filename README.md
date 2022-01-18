@@ -16,7 +16,7 @@ In order to achieve this, I wanted to keep the design a simple as possible. All 
 
 To me, this project achieved its goal of helping me understand how a basic HTTP server works and what is required. 
 This design is not perfect by any means and I never intented this to be *the best code*. 
-When I get the chance, I aim to either refactor this project or make a new one with some of the insights I've gathered after completing this project.
+When I get the chance, I aim to either refactor this project or make a new one with some of the insights I've gathered.
 
 ## Technical Detail
 
