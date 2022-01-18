@@ -12,6 +12,12 @@ My goal was to see if I could write my own rudimentary web server in C++ with mi
 
 In order to achieve this, I wanted to keep the design a simple as possible. All the server needed to do was receive requests and return responses without crashing. After achieveing that, I could then easily add other features later.
 
+## Reflections
+
+To me, this project achieved its goal of helping me understand how a basic HTTP server works and what is required. 
+This design is not perfect by any means and I never intented this to be *the best code*. 
+When I get the chance, I aim to either refactor this project or make a new one with some of the insights I've gathered after completing this project.
+
 ## Technical Detail
 
 ### Overall Design
