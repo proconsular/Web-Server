@@ -4,6 +4,8 @@
 
 A simple web server written in C++. It can serve files, and also be programmed with routes if desired. The design needs an overhaul but overall it works well for my first attempt.
 
+It also has websockets.
+
 ## Goal
 
 My goal was to see if I could write my own rudimentary web server in C++ with minimal libraries or frameworks. 
